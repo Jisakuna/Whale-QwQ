@@ -1,0 +1,28 @@
+{
+  "name": "dsh-maid-whale-pet",
+  "version": "0.1.0",
+  "description": "常驻 pet（mascot）—— 从 yunxiiQwQ/dsh-maid-whale-webUI 裁剪：只保留页面边缘常驻角色与 favicon，不含主题/背景/边框/装饰功能",
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "cordis.patch.yml"
+  ],
+  "license": "BSD-3-Clause",
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": { "platform": "web", "inject": [] }
+  },
+  "scripts": {
+    "build": "tsdown"
+  },
+  "devDependencies": {
+    "tsdown": "^0.22.2"
+  }
+}

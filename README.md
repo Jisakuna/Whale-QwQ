@@ -12,6 +12,7 @@
 |-----------|------------|----------|
 | `whale-qwq/` | Joi two-outfit theme (full source + built artifacts + assets) | Settings → Wardrobe: Joi·Flowers / Joi·Library / Native; the chat sprites are replaced with your custom **tulip 4** and **-01** artwork |
 | `dsh-custom-bg/` | Custom background plugin (with overlay-exclusion fix) | Settings → General → "Custom Background": import a background image + adjust opacity, remembered separately for light/dark modes |
+| `dsh-maid-whale-pet/` | Resident pet (mascot) plugin | Trimmed from [yunxiiQwQ/dsh-maid-whale-webUI](https://github.com/yunxiiQwQ/dsh-maid-whale-webUI): page-edge resident character + favicon only, no theme features (BSD-3-Clause) |
 
 ## Installation
 
@@ -21,9 +22,10 @@ Prerequisites: a DeepSeek Harness checkout and Node.js.
 # Run from the Harness checkout (replace <pack> with the extracted path)
 dsh plugin --profile web add <pack>/whale-qwq
 dsh plugin --profile web add <pack>/dsh-custom-bg
+dsh plugin --profile web add <pack>/dsh-maid-whale-pet
 ```
 
-Or run the one-click script `install.ps1` (keep the script in the same directory as the two plugin folders, and run it from the Harness checkout):
+Or run the one-click script `install.ps1` (keep the script in the same directory as the plugin folders, and run it from the Harness checkout):
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install.ps1

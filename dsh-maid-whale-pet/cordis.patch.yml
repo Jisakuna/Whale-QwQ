@@ -1,0 +1,4 @@
+# 仅常驻 pet：从 dsh-maid-whale-webUI 裁剪（去主题 / 边框 / 装饰 / 侧栏背景）
+- insert:
+    - id: maid-whale-pet
+      name: dsh-maid-whale-pet

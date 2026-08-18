@@ -12,6 +12,7 @@
 |------|--------|------|
 | `whale-qwq/` | Joi 双衣装主题（完整源码 + 构建产物 + 素材） | 设置 → 换装：Joi·Flowers / Joi·Library / 原生；角色小精灵已替换为定制素材 **tulip 4** 与 **-01** |
 | `dsh-custom-bg/` | 自定义背景插件（含覆盖层排除修复） | 设置 → 通用 → 「自定义背景」：导入背景图 + 不透明度，明暗模式分别记忆 |
+| `dsh-maid-whale-pet/` | 常驻 pet（mascot）插件 | 从 [yunxiiQwQ/dsh-maid-whale-webUI](https://github.com/yunxiiQwQ/dsh-maid-whale-webUI) 裁剪：仅页面边缘常驻角色 + favicon，不含主题功能（BSD-3-Clause） |
 
 ## 安装
 
@@ -21,9 +22,10 @@
 # 在 Harness checkout 目录执行（把 <pack> 换成解压路径）
 dsh plugin --profile web add <pack>/whale-qwq
 dsh plugin --profile web add <pack>/dsh-custom-bg
+dsh plugin --profile web add <pack>/dsh-maid-whale-pet
 ```
 
-或运行一键脚本 `install.ps1`（脚本与两个插件目录放在同一目录，在 Harness checkout 中执行）：
+或运行一键脚本 `install.ps1`（脚本与插件目录放在同一目录，在 Harness checkout 中执行）：
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\install.ps1
