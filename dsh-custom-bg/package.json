@@ -1,0 +1,38 @@
+{
+  "name": "dsh-custom-bg",
+  "version": "0.1.0",
+  "description": "自定义对话背景：在设置界面导入背景图并调节不透明度（按明暗模式分别记忆）",
+  "keywords": ["deepseek-harness", "dsh", "dsh-plugin", "background", "settings", "theme"],
+  "license": "MIT",
+  "homepage": "https://github.com/Jisakuna/dsh-custom-bg#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jisakuna/dsh-custom-bg.git"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./client": "./lib/client.js",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib/index.js",
+    "lib/client.js",
+    "cordis.patch.yml"
+  ],
+  "engines": { "node": ">=20" },
+  "dsh": {
+    "bundle": { "patch": "./cordis.patch.yml" },
+    "client": {
+      "platform": "web",
+      "inject": ["@deepseek-ai/dsh-client-ui-slots"]
+    }
+  },
+  "scripts": {
+    "build": "tsdown"
+  },
+  "devDependencies": {
+    "tsdown": "^0.22.2"
+  }
+}

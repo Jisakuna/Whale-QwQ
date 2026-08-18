@@ -1,0 +1,5 @@
+# 纯 UI 插件：宿主半边是空 apply，包出现在 Loader entries 里，
+# client-modules 扫描到 dsh.client 声明后挂进 __DSH_BOOT__。
+- insert:
+    - id: custom-bg
+      name: dsh-custom-bg
