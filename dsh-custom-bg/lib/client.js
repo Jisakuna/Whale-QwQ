@@ -31,19 +31,7 @@ window.__ModuleLoader__.load({
 			});
 		}
 		//#endregion
-		//#region src/client/row.tsx
-		/**
-		* 「自定义背景」设置行 —— 附加行（不同于 Joi 的遮蔽行）：
-		* 同 slot settings.general.item、独立 id、默认 priority，排在 General 区
-		* 的「外观/换装」行之后。卸载后此行随插件一起消失。
-		*
-		* 界面：标题 + 副题（当前外观模式）→ 预览 + 三个操作（导入图片 / 启用 /
-		* 清除）→ 不透明度滑杆。
-		*
-		* 排版数值照抄 Joi 主题的换装行（即 ui-theme AppearanceRow 的原生规范）：
-		* group / title / desc 逐值对齐，避免夹在原生行中间一眼看出是外来的。
-		*/
-		/** 原生行规范（与 Joi 换装行同源）。 */
+		/** 原生行规范 */
 		const NATIVE = {
 			group: {
 				display: "flex",
@@ -374,12 +362,11 @@ body div.${SURFACE_CLASS} {
 			return document.body.hasAttribute("data-ds-dark-theme");
 		}
 		/**
-		* 把用户选的图片文件压缩成可存储的 data URI。
+		* 把文件压缩成可存储的 data URI。
 		*
-		* 两件事：① 限制最长边（浏览器 canvas 有 16384 上限，且 localStorage
-		* 有 ~5MB 配额，base64 再膨胀 33%）；② 转 WebP（浏览器原生支持时）。
-		* 失败（非图片、无 canvas）时抛错，由调用方兜住。
-		* @param file - 用户选择的图片文件。
+		* ① 限制最长边
+		* ② 转 WebP
+		* @param file - 图片文件。
 		* @param maxDim - 最长边像素上限。
 		* @returns WebP（或回退 PNG）的 data URI。
 		*/
@@ -417,7 +404,7 @@ body div.${SURFACE_CLASS} {
 		}
 		//#endregion
 		//#region src/client/index.tsx
-		/** 需要的服务：slots 提供设置行的注册位。 */
+		/** slots 提供设置行的注册位。 */
 		const inject = ["slots"];
 		/**
 		* 浏览器插件体。
@@ -428,7 +415,7 @@ body div.${SURFACE_CLASS} {
 			const store = createBgStore();
 			let bound;
 			let disposed = false;
-			/** 最近一次绘制错误（诊断用）。 */
+			/** 最近一次绘制错误。 */
 			let lastError;
 			/** 当前外观模式。 */
 			const mode = () => isDark() ? "dark" : "light";
