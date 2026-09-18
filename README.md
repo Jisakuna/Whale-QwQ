@@ -1,58 +1,58 @@
 # dsh-web-gui-pack 🎨
 
-**DeepSeek Harness Web GUI personalization pack** — a complete bundle of the Joi two-outfit theme (wardrobe + character assets) and the custom background plugin. Extract and install.
+[svg](https://github.com/Jisakuna/Whale-QwQ/blob/main/README.cn.md#dsh-web-gui-pack-)
 
-**English** · [**简体中文**](README.cn.md)
+**DeepSeek Harness Web GUI Customization Pack**
+
+[**English**](https://github.com/Jisakuna/Whale-QwQ/blob/main/README.md) · **Simplified Chinese**
 
 ---
 
 ## Contents
 
-| Directory | What it is | Features |
-|-----------|------------|----------|
-| `whale-qwq/` | Joi two-outfit theme (full source + built artifacts + assets) | Settings → Wardrobe: Joi·Flowers / Joi·Library / Native; the chat sprites are replaced with your custom **tulip 4** and **-01** artwork |
-| `dsh-custom-bg/` | Custom background plugin (with overlay-exclusion fix) | Settings → General → "Custom Background": import a background image + adjust opacity, remembered separately for light/dark modes |
-| `dsh-maid-whale-pet/` | Resident pet (mascot) plugin | Trimmed from [yunxiiQwQ/dsh-maid-whale-webUI](https://github.com/yunxiiQwQ/dsh-maid-whale-webUI): page-edge resident character + favicon only, no theme features (BSD-3-Clause) |
+[svg](https://github.com/Jisakuna/Whale-QwQ/blob/main/README.cn.md#%E5%8C%85%E5%90%AB%E5%86%85%E5%AE%B9)
+
+| **Directory and Purpose** |       |                                         |
+| --------------------- | ----- | --------------------------------------- |
+| `whale-qwq/`          | Themes | Settings → Outfits: Joi·Flowers / Joi·Library |
+| `dsh-custom-bg/`      | Custom Background | Settings → General → “Custom Background”: import a background image and adjust opacity, with settings saved separately for light and dark modes |
+| `dsh-maid-whale-pet/` | Persistent Mascot | A character that stays at the edge of the page |
 
 ## Installation
 
-Prerequisites: a DeepSeek Harness checkout and Node.js.
+[svg](https://github.com/Jisakuna/Whale-QwQ/blob/main/README.cn.md#%E5%AE%89%E8%A3%85)
 
-```sh
-# Run from the Harness checkout (replace <pack> with the extracted path)
+Prerequisites: a local DeepSeek Harness source checkout + Node.js.
+
+```
+# Run from the Harness checkout directory (replace <pack> with the path to the extracted pack)
 dsh plugin --profile web add <pack>/whale-qwq
 dsh plugin --profile web add <pack>/dsh-custom-bg
 dsh plugin --profile web add <pack>/dsh-maid-whale-pet
 ```
 
-Or run the one-click script `install.ps1` (keep the script in the same directory as the plugin folders, and run it from the Harness checkout):
+**svg**
 
-```powershell
+Or run the one-click installation script `install.ps1`:
+
+```
 powershell -ExecutionPolicy Bypass -File .\install.ps1
 ```
 
-**Restart the Web GUI** (`pnpm dsh web`) after installation.
+**svg**
+
+After installation, **restart the Web GUI**.
 
 ## Usage
 
-- **Wardrobe**: Settings → General → "Wardrobe" row; pick Joi·Flowers / Joi·Library / Native. Use the top-right theme button to switch light/dark.
-- **Background**: Settings → General → "Custom Background" → import an image → check "Enabled" → adjust the opacity slider (one image per light/dark mode).
-- **Diagnostics**: run `window.__cbg()` in the browser console to inspect the background plugin state (matched surfaces, CSS variables, last error, etc.).
+[svg](https://github.com/Jisakuna/Whale-QwQ/blob/main/README.cn.md#%E4%BD%BF%E7%94%A8)
 
-## Assets
-
-- `whale-qwq/stuff/Stuff for Use/` holds all editable source art; `In a Chat - tulip 4.png` (joiFlowers slot) and `-01.png` (zhouxin slot) are the active custom sprites.
-- To swap art and rebuild: `cd whale-qwq && npm install && npm run build` (the asset pipeline needs Python + Pillow; the built `lib/` and `src/generated/` are already included, so installation works without building).
-- After editing `dsh-custom-bg` sources: `cd dsh-custom-bg && npm install && npm run build`, then just refresh the browser (the client bundle is served without caching).
-
-## Known limitations
-
-- Both plugins are installed via `link:` — **do not delete or move the extracted directories after installation**.
-- Background images and settings live in browser localStorage (key `dsh-custom-bg`); they do not follow you across browsers or machines.
-- The custom background only paints containers that are near viewport size and share the theme's base background color; if a future Harness release changes how that base color is painted, `findSurfaces()` in `dsh-custom-bg/src/client/background.ts` must be updated.
+- **Outfits**: Settings → General → “Outfits” row, then select Joi·Flowers / Joi·Library
+- **Background**: Settings → General → “Custom Background” → Import Image → “Enable” → adjust the opacity
+- **Diagnostics**: Run `window.__cbg()` in the browser console to check the background plugin’s runtime status
 
 ## License
 
-- `whale-qwq/`: CC BY-NC-SA 4.0 (see its `LICENSE` / `LICENSE-ASSETS.md` / `NOTICE`; non-commercial only)
-- `dsh-custom-bg/`: MIT
-- This pack's `README.md` / `README.cn.md` / `install.ps1`: MIT
+[svg](https://github.com/Jisakuna/Whale-QwQ/blob/main/README.cn.md#%E8%AE%B8%E5%8F%AF)
+
+MIT License
