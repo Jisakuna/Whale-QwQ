@@ -1,5 +1,9 @@
 # dsh-web-gui-pack 🎨
 
+[svg](https://github.com/Jisakuna/Whale-QwQ/blob/main/README.cn.md#dsh-web-gui-pack-)
+
+**DeepSeek Harness Web GUI Customization Pack**
+
 [**English**](https://github.com/Jisakuna/Whale-QwQ/blob/main/README.md) · **Simplified Chinese**
 
 ---
