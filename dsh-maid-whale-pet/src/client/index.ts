@@ -1,12 +1,3 @@
-/**
- * 常驻 pet（mascot）—— 从 dsh-maid-whale-webUI 裁剪的纯 pet 版本。
- *
- * 只做两件事：
- *   ① 在页面边缘渲染常驻角色（deepseek-drool，宽屏 ≥960px 显示，贴工作区右缘）；
- *   ② 把同一张图设为 favicon。
- * 不含主题背景 / 九宫格边框 / 装饰 / 侧栏海洋背景 / 标题改写等任何其他功能。
- * 完整卸载：移除节点、样式与 favicon，恢复原状。
- */
 import type { Context } from '@deepseek-ai/cordis'
 import { PET_ART } from './pet-art.ts'
 
@@ -16,7 +7,6 @@ const WIDE_QUERY = '(min-width: 960px)'
 const MASCOT_CLASS = 'dsh-mwp-mascot'
 const STYLE_ID = 'dsh-maid-whale-pet-css'
 
-/** 常驻 pet 所需的最小样式（原项目 mascot CSS 的直译，类名改为本包前缀）。 */
 function stylesheet(): string {
   return `
 body .${MASCOT_CLASS} {
@@ -43,7 +33,6 @@ body .${MASCOT_CLASS} img {
 `
 }
 
-/** 浏览器插件体。 */
 export function apply(ctx: Context): void {
   const body = document.body
 
