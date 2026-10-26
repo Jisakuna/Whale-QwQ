@@ -7,6 +7,10 @@ const MASCOT_CLASS = 'dsh-mwp-mascot'
 const STYLE_ID = 'dsh-maid-whale-pet-css'
 /** 缩小下限：再小就认不出是谁了，不如不出现。 */
 const MASCOT_MIN_SCALE = 0.55
+/** 角色左缘与侧栏右边缘（那条分隔线）之间留的空隙。 */
+const MASCOT_BORDER_GAP = 6
+/** 角色右缘与输入卡片左缘之间至少留的空隙。 */
+const MASCOT_CARD_GAP = 8
 
 function stylesheet(): string {
   return `
@@ -19,6 +23,10 @@ body .${MASCOT_CLASS} {
   height: 160px;
   opacity: 0.96;
   pointer-events: none;
+  /* 位置由脚本逐帧贴着侧栏边缘写；只有缩放走过渡，免得拖侧栏时角色
+     慢半拍、看着像飘在边框旁边。 */
+  transition: transform 160ms ease;
+  will-change: transform, left;
 }
 body .${MASCOT_CLASS} img {
   display: block;
@@ -58,39 +66,40 @@ export function apply(ctx: Context): void {
 
   const media = typeof window.matchMedia === 'function' ? window.matchMedia(WIDE_QUERY) : undefined
 
+  /** 侧栏（会话树）—— 角色贴着它的右边缘站。 */
+  const sidebarOf = (): HTMLElement | null => body.querySelector<HTMLElement>('[role="tree"]')
+  /** 输入卡片 —— 只用它来确定「右边还有多少空档」。 */
+  const cardOf = (): HTMLElement | null => body.querySelector<HTMLElement>('[data-composer-card]')
+
   /**
-   * 把角色放进「侧栏与输入卡片之间的空档」，站在地板上。
+   * 边框随动：角色左缘永远钉在侧栏右边缘 + 6px 上。
    *
-   * 为什么不再贴着侧栏右缘：0.2.x 的侧栏底部是「今日消费卡片 + 账号行 + 两个
-   * 图标」，角色高 160px，无论贴底还是上移都会压住其中一段（原来压的是账号行）。
-   * 侧栏里没有一块 148×160 的空地，所以改成向右站到对话区——输入卡片是居中的，
-   * 它左边那条空档在 1504 宽下约 210px，足够放下，而且不覆盖任何控件。
+   * 为什么锚侧栏而不是锚输入卡片：侧栏是唯一会被人手拖动的边界
+   * （ui-layout 的 col-resize 手柄、收起/展开动画），钉在它上面，「随动」
+   * 才有东西可随。输入卡片只用来判断右边还剩多少空档：
+   *   · 空档够 → 原尺寸；
+   *   · 不够 → 等比缩小（下限 0.55），仍然贴着侧栏边；
+   *   · 再窄 / 没有侧栏（收起成 rail）/ 没有输入卡片（设置页）/ 模态打开 → 隐藏。
    *
-   * 空档不够宽时（窄窗口、输入框变宽、或页面没有输入卡片）直接隐藏：
-   * 「不出现」永远好过「压住可点的东西」。
+   * 位置不写死任何像素：拖宽、收起、切会话、改窗口都重新量一次。
    */
   const syncPosition = (): void => {
     if (!mascot.isConnected) return
-    const sidebar = body.querySelector<HTMLElement>('[role="tree"]')
-    const card = body.querySelector<HTMLElement>('[data-composer-card]')
+    const sidebar = sidebarOf()
+    const card = cardOf()
     const cardBox = card?.getBoundingClientRect()
     // 设置/会话详情这类模态打开时，底下的空档被 backdrop 盖住，
     // 角色会从面板边缘露出半张脸。跟着一起退场。
-    if (body.querySelector('[role="dialog"]') !== null) {
+    if (
+      sidebar === null || cardBox === undefined || cardBox.width <= 0
+      || body.querySelector('[role="dialog"]') !== null
+    ) {
       mascot.style.display = 'none'
       return
     }
-    // 没有侧栏（窄窗收起成 rail）或没有输入卡片（设置页等）时一律不出现：
-    // 这两种情况下都没有「侧栏与输入框之间」那块空地可站。
-    if (sidebar === null || cardBox === undefined || cardBox.width <= 0) {
-      mascot.style.display = 'none'
-      return
-    }
-    const gutterLeft = sidebar.getBoundingClientRect().right
-    const gutter = cardBox.left - gutterLeft
-    // 空档不够 148：先等比缩小（下限 0.55，再小就认不出来了），
-    // 缩到装不下就隐藏——「不出现」好过「压住可点的东西」。
-    const scale = Math.min(1, (gutter - 16) / MASCOT_WIDTH)
+    const border = sidebar.getBoundingClientRect().right
+    const gutter = cardBox.left - border
+    const scale = Math.min(1, (gutter - MASCOT_BORDER_GAP - MASCOT_CARD_GAP) / MASCOT_WIDTH)
     if (scale < MASCOT_MIN_SCALE) {
       mascot.style.display = 'none'
       return
@@ -98,17 +107,40 @@ export function apply(ctx: Context): void {
     mascot.style.display = ''
     mascot.style.transformOrigin = 'left bottom'
     mascot.style.transform = scale >= 1 ? '' : `scale(${scale.toFixed(3)})`
-    // 原尺寸时在空档里居中；缩小时贴住侧栏右缘，把剩下的宽度留给输入框。
-    const left = Math.round(scale >= 1
-      ? Math.max(gutterLeft + 8, gutterLeft + (gutter - MASCOT_WIDTH) / 2)
-      : gutterLeft + 8)
+    const left = Math.round(border + MASCOT_BORDER_GAP)
     if (mascot.style.left !== `${left}px`) mascot.style.left = `${left}px`
+  }
+
+  /**
+   * 只观察「会动的两条边」，而不是整棵 DOM：
+   * ResizeObserver 在拖动侧栏手柄、收起动画里逐帧回调，角色因此是真的跟着边框走；
+   * MutationObserver 只负责节点被 React 换掉时重新挂观察（重渲染会换元素身份）。
+   */
+  let trackedSidebar: Element | null = null
+  let trackedCard: Element | null = null
+  const resize = typeof ResizeObserver === 'function' ? new ResizeObserver(() => { syncPosition() }) : undefined
+
+  const retrack = (): void => {
+    if (resize === undefined) return
+    const sidebar = sidebarOf()
+    if (sidebar !== trackedSidebar) {
+      if (trackedSidebar !== null) resize.unobserve(trackedSidebar)
+      trackedSidebar = sidebar
+      if (sidebar !== null) resize.observe(sidebar)
+    }
+    const card = cardOf()
+    if (card !== trackedCard) {
+      if (trackedCard !== null) resize.unobserve(trackedCard)
+      trackedCard = card
+      if (card !== null) resize.observe(card)
+    }
   }
 
   /** 宽屏挂载 / 窄屏隐藏。 */
   const syncMount = (): void => {
     if (media?.matches ?? true) {
       if (!mascot.isConnected) body.append(mascot)
+      retrack()
       syncPosition()
     } else {
       mascot.remove()
@@ -117,14 +149,18 @@ export function apply(ctx: Context): void {
 
   syncMount()
 
-  // 侧栏/输入卡片变化（切会话、切页、窗口尺寸）时重新找位置。
-  const observer = new MutationObserver(syncPosition)
+  const observer = new MutationObserver(() => {
+    if (!mascot.isConnected) return
+    retrack()
+    syncPosition()
+  })
   observer.observe(body, { childList: true, subtree: true })
   window.addEventListener('resize', syncPosition)
   media?.addEventListener('change', syncMount)
 
   ctx.effect(() => () => {
     observer.disconnect()
+    resize?.disconnect()
     media?.removeEventListener('change', syncMount)
     window.removeEventListener('resize', syncPosition)
     mascot.remove()

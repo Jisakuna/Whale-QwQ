@@ -1,6 +1,6 @@
 {
   "name": "dsh-maid-whale-pet",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "常驻 pet（mascot）—— 从 yunxiiQwQ/dsh-maid-whale-webUI 裁剪：只保留页面边缘常驻角色与 favicon，不含主题/背景/边框/装饰功能（DeepSeek Harness 0.2.x）",
   "type": "module",
   "main": "lib/index.js",

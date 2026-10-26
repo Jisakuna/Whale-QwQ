@@ -22,7 +22,7 @@ and how it was verified in a real browser).
 |------|--------|------|
 | `whale-qwq/` | Themes | Settings → General → “Outfits”: Joi·Flowers / Joi·Library  |
 | `dsh-custom-bg/` | Custom Background | Settings → General → “Custom Background”: import a background image and adjust opacity, with settings saved separately for light and dark modes |
-| `dsh-maid-whale-pet/` | Persistent Mascot | A character that stays at the edge of the page |
+| `dsh-maid-whale-pet/` | Persistent Mascot | A mascot that follows the sidebar border (tracks drag/resize, shrinks or hides when the gutter is too tight) |
 
 ## Installation
 
