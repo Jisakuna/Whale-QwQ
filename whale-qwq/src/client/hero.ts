@@ -234,6 +234,10 @@ export function brandSurgery(): boolean {
   const svg = document.querySelector(`${SELECTORS.brand} svg`)
   if (svg === null) return false
   if (svg.getAttribute('data-joi-done') === '1') return true
+  // 0.2.x 把字标拆成了 logo 图 + 原生 mark/name 两段，mark 里是鲸鱼、name 里是
+  // deepseek 字样，SVG 内已经没有「HARNESS 字母段」可搬。判一次就记住，
+  // 否则下面每个 rAF 都会重算一遍 getBBox（装饰层是逐帧重算的）。
+  if (svg.getAttribute('data-joi-skip') === '1') return false
 
   // 记录每个将被移动节点的原位（父 + 原后继），否则这台手术是单向的，
   // 切回原生时还不回去。SVG 的绘制顺序就是文档顺序，位置记准了才能复原。
@@ -250,7 +254,12 @@ export function brandSurgery(): boolean {
     .map(p => ({ p, x: p.getBBox().x }))
     .sort((m, n) => m.x - n.x)
   const letters = boxed.filter(b => b.x > 128).map(b => b.p)
-  if (letters.length === 0) return false // 尚未布局，等下一帧
+  if (letters.length === 0) {
+    // 尚未布局（rc.6 时的老形态）或形态已变（0.2.x 的 mark/name 两段 SVG）：
+    // 两种情况都没有可搬的字母段。标上 skip，下一帧不再重试。
+    svg.setAttribute('data-joi-skip', '1')
+    return false
+  }
 
   const whaleGlyph = boxed[0]?.p
   if (whaleGlyph !== undefined) {
@@ -300,4 +309,5 @@ export function undoBrandSurgery(): void {
   for (const glyph of hiddenGlyphs) glyph.style.removeProperty('display')
   hiddenGlyphs.clear()
   document.querySelector(`${SELECTORS.brand} svg`)?.removeAttribute('data-joi-done')
+  document.querySelector(`${SELECTORS.brand} svg`)?.removeAttribute('data-joi-skip')
 }

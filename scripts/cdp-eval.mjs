@@ -54,4 +54,15 @@ await S('Page.navigate', { url })
 await sleep(Number(process.env.WAIT ?? 11000))
 const r = await S('Runtime.evaluate', { expression, awaitPromise: true, returnByValue: true })
 console.log(JSON.stringify(r.exceptionDetails ? { __error: r.exceptionDetails.exception?.description ?? r.exceptionDetails.text } : r.result.value, null, 2))
+if (process.env.SHOT) {
+  const { writeFileSync } = await import('node:fs')
+  const params = { format: 'png' }
+  if (process.env.SHOT_CLIP) {
+    const [x, y, width, height] = process.env.SHOT_CLIP.split(',').map(Number)
+    params.clip = { x, y, width, height, scale: 1 }
+  }
+  const shot = await S('Page.captureScreenshot', params)
+  writeFileSync(process.env.SHOT, Buffer.from(shot.data, 'base64'))
+  console.log(`screenshot -> ${process.env.SHOT}`)
+}
 await send('Target.closeTarget', { targetId }); browser.close(); chrome.kill(); process.exit(0)

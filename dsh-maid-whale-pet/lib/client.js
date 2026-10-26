@@ -13,12 +13,13 @@ window.__ModuleLoader__.load({
 		const WIDE_QUERY = "(min-width: 960px)";
 		const MASCOT_CLASS = "dsh-mwp-mascot";
 		const STYLE_ID = "dsh-maid-whale-pet-css";
-		/** 常驻 pet 所需的最小样式（原项目 mascot CSS 的直译，类名改为本包前缀）。 */
 		function stylesheet() {
 			return `
 body .${MASCOT_CLASS} {
   position: fixed;
-  bottom: max(20px, env(safe-area-inset-bottom));
+  /* 0.2.x 的侧栏底部多了「今日消费」卡片与账号行，贴底 20px 会压住账号名。
+     整体上移 20px（20 → 40），给底栏留出让位；高度与水平定位不变。 */
+  bottom: max(40px, env(safe-area-inset-bottom));
   left: max(18px, env(safe-area-inset-left));
   z-index: 8;
   width: 148px;
@@ -39,7 +40,6 @@ body .${MASCOT_CLASS} img {
 }
 `;
 		}
-		/** 浏览器插件体。 */
 		function apply(ctx) {
 			const body = document.body;
 			const style = document.createElement("style");

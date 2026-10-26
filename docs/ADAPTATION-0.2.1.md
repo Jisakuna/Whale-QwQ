@@ -179,3 +179,29 @@ cd "$env:USERPROFILE\.dsh\profiles\web"; pnpm install
 仓库侧的回退点：上一版（0.1.9 源码与产物）是 `3fa91dd`，本次适配提交在它之上。
 `git reset --hard 3fa91dd` 即回到 0.1.x；只想撤销某个文件用
 `git checkout 3fa91dd -- <path>`。
+
+---
+
+## 七、0.2.1 增量修复（2026-10-26）
+
+0.2.0 装进真实 GUI 后暴露的两个视觉问题：
+
+1. **左上角 logo 横向重复四遍。** 0.2.1 把字标拆成了
+   `button._brand > span._brandIdentity > (span._brandMark + span._brandName)`，
+   而本插件的选择器是裸 `[class*=_brand]`——四层全被贴上同一张 Joi logo。
+   现在 `SELECTORS.brand` 锚到 `button[class*=_brand]`，并把原生 mark/name 那层
+   （`_brandIdentity`，本来就是 `aria-hidden` 的装饰）收掉：**图标一个就够**。
+   顺带修了个隐蔽开销：`brandSurgery()` 在新结构里找不到可搬的「HARNESS 字母段」，
+   原先每帧都会重算一遍 `getBBox`；现在判一次就写 `data-joi-skip`，不再逐帧重试。
+2. **左下角常驻 pet 压住底栏。** 0.2.x 的侧栏底部是「今日消费卡片 + 账号行」，
+   `bottom: 20px` 时 pet 正好压在「已登录」那一行上。按反馈上移 20px
+   （`bottom: max(40px, …)`）。
+
+实测（1504×865 视口，headless Chrome）：带 logo 背景的元素从 **4 个降到 1 个**，
+`_brandIdentity` 计算样式为 `display: none`，pet 的 bottom 从 20 变 40。
+侧栏截图见 `docs/sidebar-brand-pet.png`。
+
+> 关于 pet 的剩余遮挡：40px 只兑现了「上移 20px」。侧栏底栏高约 210px、pet 高 160px，
+> 所以它依旧压着「今日消费」卡片的下半部分。要完全让开底栏，把
+> `dsh-maid-whale-pet/src/client/index.ts` 里的 `bottom: max(40px, …)`
+> 调到 `max(220px, …)` 左右；代价是它会改压会话列表的最后两行。

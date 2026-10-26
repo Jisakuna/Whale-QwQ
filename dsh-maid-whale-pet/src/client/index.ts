@@ -11,7 +11,9 @@ function stylesheet(): string {
   return `
 body .${MASCOT_CLASS} {
   position: fixed;
-  bottom: max(20px, env(safe-area-inset-bottom));
+  /* 0.2.x 的侧栏底部多了「今日消费」卡片与账号行，贴底 20px 会压住账号名。
+     整体上移 20px（20 → 40），给底栏留出让位；高度与水平定位不变。 */
+  bottom: max(40px, env(safe-area-inset-bottom));
   left: max(18px, env(safe-area-inset-left));
   z-index: 8;
   width: 148px;

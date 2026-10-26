@@ -778,8 +778,15 @@ window.__ModuleLoader__.load({
 		* verify-4q 的选择器体检会拦下 hash 前缀。
 		*/
 		const SELECTORS = {
-			/** 品牌区（左上角字标）。app 里 `_brand` 只此一家。 */
-			brand: "[class*=_brand]",
+			/**
+			* 品牌区（左上角字标）。
+			*
+			* 0.2.1 把它拆成了 `button._brand > span._brandIdentity > (span._brandMark +
+			* span._brandName)`。过去这里写的是裸 `[class*=_brand]`，于是四层全部命中：
+			* 每层都被贴上同一张 Joi 双人 logo，左上角横向重复四遍。锚到按钮本身
+			* （app 里只有这一个，且它带着「新建会话」的 aria-label），logo 才只有一个。
+			*/
+			brand: "button[class*=_brand]",
 			/** 品牌区所在行，默认 overflow:hidden。 */
 			logoRow: "[class*=logoRow]",
 			/** 侧栏列。 */
@@ -878,6 +885,11 @@ ${SELECTORS.brand} {
   filter: var(--joi-logo-rim);
 }
 ${SELECTORS.brand} svg { overflow: visible !important; transform: translateX(-27px); }
+
+/* 0.2.1 的字标是「Joi logo + 原生 mark/name」两段拼的：identitiy 那层原本
+   aria-hidden，纯装饰。既然 logo 已经落在按钮上，就把原生 mark/name 整层收掉，
+   否则 46px 的 logo 旁边还挤着鲸鱼标与 deepseek 字样，窄侧栏里必然裁切。 */
+${SELECTORS.brand} > [class*=_brandIdentity] { display: none !important; }
 
 /* ④  底纹没有可贴的表面 —— 见下面 textureRules 与 paintTexture。 */
 
@@ -1376,6 +1388,7 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 			const svg = document.querySelector(`${SELECTORS.brand} svg`);
 			if (svg === null) return false;
 			if (svg.getAttribute("data-joi-done") === "1") return true;
+			if (svg.getAttribute("data-joi-skip") === "1") return false;
 			const remember = (node) => {
 				if (node.parentNode === null) return;
 				origin.set(node, {
@@ -1390,7 +1403,10 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 				x: p.getBBox().x
 			})).sort((m, n) => m.x - n.x);
 			const letters = boxed.filter((b) => b.x > 128).map((b) => b.p);
-			if (letters.length === 0) return false;
+			if (letters.length === 0) {
+				svg.setAttribute("data-joi-skip", "1");
+				return false;
+			}
 			const whaleGlyph = boxed[0]?.p;
 			if (whaleGlyph !== void 0) {
 				hiddenGlyphs.add(whaleGlyph);
@@ -1437,6 +1453,7 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 			for (const glyph of hiddenGlyphs) glyph.style.removeProperty("display");
 			hiddenGlyphs.clear();
 			document.querySelector(`${SELECTORS.brand} svg`)?.removeAttribute("data-joi-done");
+			document.querySelector(`${SELECTORS.brand} svg`)?.removeAttribute("data-joi-skip");
 		}
 		//#endregion
 		//#region src/client/chat.ts
