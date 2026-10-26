@@ -9,15 +9,19 @@
  */
 import type { UserConfig } from 'tsdown'
 
-/** dsh 浏览器模块表里的平台模块（与 packages/client/web/src/platform.ts 对齐）。 */
+/** dsh 0.2.1 浏览器模块表里的平台模块（取自 web bundle 的模块表）。 */
 const PLATFORM_MODULES = [
   'react',
   'react/jsx-runtime',
   'react-dom',
   'react-dom/client',
   '@deepseek-ai/cordis',
+  'zod',
+  '@tanstack/react-virtual',
+  '@deepseek-ai/dsh-client-store',
   '@deepseek-ai/dsh-client-ui-slots',
-  '@deepseek-ai/dsh-client-runtime/client',
+  '@deepseek-ai/dsh-client-ui-primitives',
+  '@deepseek-ai/dsh-client-ui-dockkit',
 ]
 
 const ID = 'dsh-custom-bg'

@@ -12,8 +12,10 @@
  * 全程 fail-soft：选择器失配、素材缺失、canvas 不可用一律静默降级，
  * 不把原生界面弄坏。
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { BoundActions } from '@deepseek-ai/dsh-client-ui-slots'
+// 仅类型：ctx.slots 的 Context 合并（槽位服务由 ui-renderer 提供）。
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import { createBgStore } from './store.ts'
 import { BgRow, type BgRowInjected } from './row.tsx'
 import { applyBackground, findSurfaces, STYLE_ID, stylesheet, SURFACE_CLASS, VAR_IMAGE } from './background.ts'

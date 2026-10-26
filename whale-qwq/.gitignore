@@ -6,3 +6,4 @@ design/
 *.tgz
 stuff/Referrence/
 
+lib/*.map

@@ -8,9 +8,9 @@
  *   · 明暗不归我们。body[data-ds-dark-theme] 是 ui-layout presenter 的私产，
  *     外部写会被它改回去。衣装只管色相，明暗永远由 app 的外观设置驱动。
  *   · 偏好要能存。ui-theme 的偏好白名单只认 light/dark/system，
- *     自定义 id 存不进去，所以走本插件自有的设置命名空间。
+ *     自定义 id 存不进去，所以走本插件自有的设置段。
  */
-import type { SettingsScope } from '@deepseek-ai/dsh-client-runtime/client'
+import type { ConfigForm } from '@deepseek-ai/dsh-client-ui-settings/client'
 import { DEFAULT_SKIN, DEFAULT_SUIT, SUIT_FIELD, isSkin, type JoiSettings, type Skin, type Suit } from '../contract.ts'
 import { tokensFor, type TokenOverrides } from './tokens.ts'
 
@@ -29,18 +29,14 @@ export interface TokenLayerHost {
 const LAYER = 'whale-qwq'
 
 /**
- * 本地兜底存放键。
+ * 本地兜底存放键。键名沿用 0.1.x，升级后用户原来的选择不会丢。
  *
- * 为什么需要兜底：宿主 apiproxy 里有一份硬编码的命名空间白名单
- * （WEB_SETTINGS_NAMESPACES / PRODUCT_SETTINGS_NAMESPACES），`settings.describe`
- * 只把名单内的段发给浏览器。源码注释写得很明白——「settings 接缝保持通用；
- * 未来的注册不会默认变成远端可读写」。也就是说第三方插件的设置段**按设计**
- * 到不了浏览器：宿主侧 register 成功，浏览器侧拿到的却是 unavailable。
- *
- * 于是走两级：官方通道优先（名单若将来放开，或本插件被收编，就自动用上），
- * 拿不到就落 localStorage。localStorage 同样满足「过刷新与重启仍在」，
- * 代价是它绑在浏览器 origin 上，不进 $DSH_HOME/settings.yaml，
- * 换浏览器或换机器不跟随——这条限制照实记在 README 的已知限制里。
+ * 为什么还要兜底：0.2.x 的 `SettingsForms` 只投影 schema 里标了 `.volatile()`
+ * 的字段，且要等 Loader 把那行挂起来之后 `describe` 才有内容；在那之前
+ * 浏览器拿到的快照是 `unavailable`。另外设置文档本身也可能不可写（远端浏览器、
+ * 只读 profile）。localStorage 同样满足「过刷新与重启仍在」，代价是它绑在
+ * 浏览器 origin 上，不进 $DSH_HOME，换浏览器或换机器不跟随——这条限制照实
+ * 记在 README 的已知限制里。
  */
 const LOCAL_KEY = 'whale-qwq.suit'
 
@@ -60,15 +56,19 @@ export class SuitRuntime {
   private lastSuit: Suit = DEFAULT_SUIT
 
   private readonly host: TokenLayerHost
-  private readonly scope: SettingsScope<JoiSettings> | undefined
+  /**
+   * 本插件 Loader 行的配置表单（0.2.x 的官方持久化通道）。
+   * 由 `ctx.configForms.get(entryId)` 提供；设置服务缺席时为 undefined。
+   */
+  private readonly form: ConfigForm<JoiSettings> | undefined
 
   /**
    * @param host - token 覆盖宿主（生产环境是 ctx.theme）。
-   * @param scope - 本插件自有设置命名空间的句柄；不可用时退化为进程内偏好。
+   * @param form - 本插件设置行的表单句柄；不可用时退化为进程内偏好。
    */
-  constructor(host: TokenLayerHost, scope: SettingsScope<JoiSettings> | undefined) {
+  constructor(host: TokenLayerHost, form: ConfigForm<JoiSettings> | undefined) {
     this.host = host
-    this.scope = scope
+    this.form = form
   }
 
   /** @returns 当前皮肤（含 native）。 */
@@ -98,18 +98,36 @@ export class SuitRuntime {
   }
 
   /**
-   * @returns 持久化通道的实况。`unavailable` / `memory` 表示这台机器上
+   * @returns 持久化通道的实况。`unavailable` / `loading` 表示这台机器上
    *          衣装偏好只在进程内有效——这是降级而不是故障，但必须能看见，
    *          否则「选了却没记住」会被当成随机 bug 反复排查。
    */
-  get persistence(): { channel: string, hostStatus: string, stored: unknown } {
-    const snap = this.scope?.getSnapshot()
+  get persistence(): { channel: string, hostStatus: string, hostUser: unknown, stored: unknown } {
+    const snapshot = this.form?.getSnapshot()
     return {
       // 实际生效的通道：host = 官方设置文档；local = localStorage 兜底。
-      channel: snap?.status === 'ready' ? 'host' : 'local',
-      hostStatus: snap?.status ?? 'unbound',
+      channel: snapshot?.status === 'ready' ? 'host' : 'local',
+      hostStatus: snapshot?.status ?? 'unbound',
+      // 用户层里那格的实际取值（undefined = 没覆盖过，走默认或兜底）。
+      hostUser: this.readHost(),
       stored: this.read(),
     }
+  }
+
+  /**
+   * 读设置文档里的衣装偏好。
+   *
+   * 只认**用户层**（`snapshot.user`），不认解析后的 `value`：后者带 schema
+   * 默认值 `flowers`，若拿它当「用户选过」的证据，0.1.x 时代靠 localStorage
+   * 记住的 `library` 会在升级后第一次加载时被默认值顶掉。`user` 里有这个键
+   * 才说明用户真的在设置文档里选过。
+   * @returns 存着的衣装，没有则 undefined。
+   */
+  private readHost(): Skin | undefined {
+    const user = this.form?.getSnapshot().user
+    if (typeof user !== 'object' || user === null) return undefined
+    const stored = (user as Record<string, unknown>)[SUIT_FIELD]
+    return isSkin(stored) ? stored : undefined
   }
 
   /**
@@ -117,8 +135,8 @@ export class SuitRuntime {
    * @returns 存着的衣装，没有则 undefined。
    */
   private read(): Skin | undefined {
-    const fromHost = this.scope?.getSnapshot().value?.[SUIT_FIELD]
-    if (isSkin(fromHost)) return fromHost
+    const fromHost = this.readHost()
+    if (fromHost !== undefined) return fromHost
     try {
       const local = globalThis.localStorage?.getItem(LOCAL_KEY)
       if (isSkin(local)) return local
@@ -130,14 +148,14 @@ export class SuitRuntime {
 
   /**
    * 写入持久偏好。两条通道都尝试：官方通道若可用就走它，
-   * 本地兜底无论如何都写——名单放开与否不该改变用户看到的行为。
+   * 本地兜底无论如何都写——设置文档能不能写不该改变用户看到的行为。
    * @param suit - 要记住的衣装。
    */
   private write(suit: Skin): void {
     // 写失败不回滚界面：用户已经看见换装生效了，把它撤回去更费解。
     // 设置层自己有重试与回读恢复，这里只需要不让 rejection 逃逸。
-    if (this.scope?.getSnapshot().status === 'ready') {
-      void this.scope.set(SUIT_FIELD, suit).catch(() => {})
+    if (this.form?.getSnapshot().status === 'ready') {
+      void this.form.set(SUIT_FIELD, suit).catch(() => {})
     }
     try {
       globalThis.localStorage?.setItem(LOCAL_KEY, suit)
@@ -158,6 +176,17 @@ export class SuitRuntime {
       if (stored !== 'native') this.lastSuit = stored
     }
     this.mount()
+  }
+
+  /**
+   * 采纳设置文档里的用户层改动（多窗口、Host 侧写入都走这里）。
+   *
+   * 只处理用户层：`value` 在首次 describe 时就已经带默认值，
+   * 用它回灌会把 localStorage 里的选择顶掉，见 {@link readHost}。
+   */
+  adoptHost(): void {
+    const stored = this.readHost()
+    if (stored !== undefined && stored !== this.current) this.setSuit(stored, false)
   }
 
   /**

@@ -25,6 +25,7 @@
 
 <p align="center">
   <img alt="dsh web plugin" src="https://img.shields.io/badge/dsh%20plugin-web-8B5CF6?style=flat-square">
+  <img alt="DeepSeek Harness 0.2.x" src="https://img.shields.io/badge/dsh-0.2.x-0A7E8C?style=flat-square">
   <img alt="两套衣装" src="https://img.shields.io/badge/衣装-Flowers%20%C2%B7%20Library-EE7F2D?style=flat-square">
   <a href="./LICENSE"><img alt="MIT License" src="https://img.shields.io/badge/code-MIT-3DA639?style=flat-square"></a>
   <a href="./LICENSE-ASSETS.md"><img alt="CC BY-NC-SA 4.0" src="https://img.shields.io/badge/assets-CC%20BY--NC--SA%204.0-EF9421?style=flat-square"></a>
@@ -115,6 +116,14 @@ die-cut 贴纸里：引擎和她，一个都不能少。合照随衣装一起换
 <a id="installation"></a>
 
 ## 安装
+
+> [!IMPORTANT]
+> **0.2.0 只适配 DeepSeek Harness 0.2.x**（实机验证于 `0.2.1-rc.2`）。
+> 0.2.1 移除了 `settingsNamespace` / `installSettingsSection`，并下线了
+> `@deepseek-ai/dsh-client-runtime`：0.1.9 装在 0.2.x 上会整包加载失败，
+> 装 0.2.0 在 0.1.x 上则会被兼容闸门拦下。换核心之前先确认版本。
+> 逐条改动与验证记录见仓库根目录的
+> [`docs/ADAPTATION-0.2.1.md`](../docs/ADAPTATION-0.2.1.md)。
 
 ### 先确认两件事
 

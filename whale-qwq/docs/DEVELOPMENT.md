@@ -139,14 +139,17 @@ npm run verify    # 四象限回归（静态半）
 
 ## 已知限制
 
-1. **衣装偏好存在 localStorage，不进 `$DSH_HOME/settings.yaml`。**
-   宿主 apiproxy 有一份硬编码命名空间白名单（`WEB_SETTINGS_NAMESPACES` /
-   `PRODUCT_SETTINGS_NAMESPACES`），`settings.describe` 只把名单内的段发给浏览器，
-   源码注释写明「未来的注册不会默认变成远端可读写」。宿主侧 `settings.register`
-   成功，浏览器侧拿到的仍是 `unavailable`。本插件两条通道都试，官方通道可用时优先
-   （名单若放开会自动用上），否则落 localStorage。后果：偏好绑在浏览器 origin 上，
-   换浏览器或换机器不跟随。当前实况可在 `#joi-theme-css[data-joi-metrics]`
-   的 `persistence` 字段看到。
+1. **衣装偏好：设置文档是主通道，localStorage 只在拿不到时兜底。**
+   0.2.x 的 `SettingsForms` 不再有硬编码命名空间白名单：Loader 行的 `Config`
+   schema（本插件是 `suit`，标了 `.volatile()`）经 `settings.describe` 原样发给浏览器，
+   `ctx.configForms.get('whale-qwq')` 拿到 `ready` 快照，写入落到 profile 的
+   `cordis.patch.yml`（实测 `channel: 'host'`）。localStorage（键 `whale-qwq.suit`）
+   仍保留：远端浏览器、只读 profile、以及 describe 尚未就绪的首帧都要靠它，
+   同时它让 0.1.x 时代攒下的选择在升级后不丢。读回时**只认用户层**
+   （`snapshot.user.suit`），不认带默认值的 `value`——否则升级后第一次加载
+   就会被默认值 `flowers` 顶掉。
+   当前实况可在 `#joi-theme-css[data-joi-metrics]` 的 `persistence` 字段看到
+   （`channel` / `hostStatus` / `hostUser` / `stored`）。
 2. **首帧闪烁。** host 的引导脚本只认明暗三值，衣装到不了那一步，
    所以刷新后会先出现一帧未着衣装的界面。不 hack index 注入。
 3. **带 hash 的类名耦合。** `r91kyq_brand`、`KZiXvq_headline`、`PcWdmW_card` 等
@@ -154,8 +157,9 @@ npm run verify    # 四象限回归（静态半）
 4. **底纹靠运行期认领表面。** 正式解法应是 app 侧出一个 `--dsh-bg-texture`
    由 AppFrame / ConversationRoot 消费；那是 upstream 议题，不在本轮范围。
 5. **WebP。** 现代浏览器通吃，但确实不是 PNG。
-6. **构建期版本差。** 类型按 npm `0.1.0-rc.6` 装，本机运行的 harness 是
-   `0.1.0-rc.5`（该版本未发布到 npm）。已在 rc.5 上实机验证通过。
+6. **构建期版本差。** 类型按 npm `0.2.1-rc.3` 的客户端包装，本机运行的 harness 是
+   `0.2.1-rc.2`（同一条 0.2.1 线，只差一个 rc）。已在 rc.2 上实机验证通过；
+   0.1.x 时代的类型（`0.1.0-rc.6`）已全部换掉。
 
 ## 状态怎么来的
 

@@ -21,8 +21,10 @@
  * 手写数值还有个更要命的问题：它不跟着宿主走，app 改了行规范这里不会知道。
  */
 import { useState } from 'react'
+// 0.2.x 的图标集把「16」后缀换成了笔画档位后缀：Regular = 1px 描边，
+// Medium = 1.3px。下面三个方块沿用 1px 档（与 app 自己的外观行一致）。
 import {
-  IconDarkOutline16, IconFollowsystemOutline16, IconLightOutline16,
+  IconDarkOutlineRegular, IconFollowsystemOutlineRegular, IconLightOutlineRegular,
 } from '@deepseek-ai/dsh-client-ui-primitives'
 import type { PropsStore } from '@deepseek-ai/dsh-client-ui-slots'
 import { PALETTE } from '../generated/baseline.ts'
@@ -59,10 +61,10 @@ const SKIN_CARDS: Record<Skin, { name: string, tag: string }> = {
 }
 
 /** 明暗三方块，与内置行同序同图标。 */
-const CUBES: ReadonlyArray<{ id: Preference, label: string, Icon: typeof IconLightOutline16 }> = [
-  { id: 'light', label: '浅色', Icon: IconLightOutline16 },
-  { id: 'dark', label: '深色', Icon: IconDarkOutline16 },
-  { id: 'system', label: '跟随系统', Icon: IconFollowsystemOutline16 },
+const CUBES: ReadonlyArray<{ id: Preference, label: string, Icon: typeof IconLightOutlineRegular }> = [
+  { id: 'light', label: '浅色', Icon: IconLightOutlineRegular },
+  { id: 'dark', label: '深色', Icon: IconDarkOutlineRegular },
+  { id: 'system', label: '跟随系统', Icon: IconFollowsystemOutlineRegular },
 ]
 
 /**

@@ -37,13 +37,20 @@ export function isSkin(value: unknown): value is Skin {
 }
 
 /**
- * 本插件自有的设置命名空间。
+ * 本插件的设置命名空间 —— 在 0.2.x 里它就是 Loader 行的 id。
  *
- * 不复用 ui-theme 的命名空间，也不走 register()+setTheme() 当持久化路径：
+ * 0.1.x 时代插件自己 `ctx.settings.register('joi-channel-theme', schema)`，
+ * 命名空间由插件自定；0.2.x 把公开 API 换成了「Loader 行的 Config schema 驱动」：
+ * `SettingsForms.describe()` 用 `entry.options.id` 当命名空间，浏览器半边也只能
+ * 按这个 id 取表单（`ctx.configForms.get(id)`）。所以这个常量现在的取值必须与
+ * `cordis.patch.yml` 里 insert 的 `- id:` 逐字一致——改了这边不改那边，
+ * 表现是换装能点、却永远存不进设置文档。
+ *
+ * 不复用 ui-theme 的命名空间，也不走 setTheme() 当持久化路径：
  * ThemeRuntime 的 isThemePreference 白名单只认 light/dark/system，
  * 任何自定义 id 都存不进它的偏好字段（源码实证）。明暗归 app，衣装归这里。
  */
-export const SETTINGS_NAMESPACE = 'joi-channel-theme'
+export const SETTINGS_NAMESPACE = 'whale-qwq'
 
 /** 承载衣装选择的字段名。 */
 export const SUIT_FIELD = 'suit'

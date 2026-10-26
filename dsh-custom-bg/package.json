@@ -1,13 +1,13 @@
 {
   "name": "dsh-custom-bg",
-  "version": "0.1.0",
-  "description": "自定义对话背景：在设置界面导入背景图并调节不透明度（按明暗模式分别记忆）",
+  "version": "0.1.1",
+  "description": "自定义对话背景：在设置界面导入背景图并调节不透明度（按明暗模式分别记忆）— for DeepSeek Harness 0.2.x",
   "keywords": ["deepseek-harness", "dsh", "dsh-plugin", "background", "settings", "theme"],
   "license": "MIT",
-  "homepage": "https://github.com/Jisakuna/dsh-custom-bg#readme",
+  "homepage": "https://github.com/Jisakuna/Whale-QwQ#readme",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Jisakuna/dsh-custom-bg.git"
+    "url": "git+https://github.com/Jisakuna/Whale-QwQ.git"
   },
   "type": "module",
   "main": "lib/index.js",
@@ -21,18 +21,35 @@
     "lib/client.js",
     "cordis.patch.yml"
   ],
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20",
+    "dsh": "^0.2.1-rc.2"
+  },
   "dsh": {
     "bundle": { "patch": "./cordis.patch.yml" },
     "client": {
       "platform": "web",
-      "inject": ["@deepseek-ai/dsh-client-ui-slots"]
+      "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
+        "@deepseek-ai/dsh-client-ui-settings"
+      ]
     }
   },
   "scripts": {
     "build": "tsdown"
   },
   "devDependencies": {
-    "tsdown": "^0.22.2"
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-client-store": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.3",
+    "@types/react": "~18.3.1",
+    "react": "~18.3.1",
+    "tsdown": "^0.22.2",
+    "typescript": "^6.0.3"
+  },
+  "peerDependencies": {
+    "react": "^18.2.0"
   }
 }

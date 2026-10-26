@@ -2,7 +2,9 @@
  * 设置行的 slot store：插件世界到组件世界的单向镜像。
  * 组件只经由 props.useStore 读，写入口只有插件 apply 里的同步回调。
  */
-import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-runtime/client'
+// 0.2.x 把快照 store 引擎从 dsh-client-runtime 升格成了平台模块
+// @deepseek-ai/dsh-client-store。
+import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-store'
 
 /** 设置行展示态。 */
 export interface BgRowState {

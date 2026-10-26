@@ -13,10 +13,11 @@
  * 明暗自始至终归 app：body[data-ds-dark-theme] 是 ui-layout presenter 的私产，
  * 本插件从不写它。
  */
-import type { ClientContext } from '@deepseek-ai/dsh-client-runtime/client'
+import type { Context as ClientContext } from '@deepseek-ai/cordis'
 import type { BoundActions } from '@deepseek-ai/dsh-client-ui-slots'
-// 仅类型：把 ctx.theme / ctx.settingsScope / ctx.slots 的 Context 合并拉进来。
+// 仅类型：把 ctx.theme / ctx.slots / ctx.configForms 的 Context 合并拉进来。
 // 值导入会内联出重复的运行时实例，跨插件协作只能走 cordis 服务。
+import type {} from '@deepseek-ai/dsh-client-ui-renderer/client'
 import type {} from '@deepseek-ai/dsh-client-ui-theme/client'
 import type {} from '@deepseek-ai/dsh-client-ui-settings/client'
 import { SETTINGS_NAMESPACE, type JoiSettings, type Skin } from '../contract.ts'
@@ -30,9 +31,10 @@ import { installFavicon } from './favicon.ts'
  * 需要的服务。
  * · theme —— token 覆盖层与明暗偏好。
  * · slots —— 换装行的注册位。
- * · settingsScope —— 衣装偏好的持久化通道。
+ * · configForms —— 本插件 Loader 行配置的读写通道（0.2.x 起替代
+ *   `settingsScope`；设置段就是那一行的 Config schema）。
  */
-export const inject = ['theme', 'slots', 'settingsScope']
+export const inject = ['theme', 'slots', 'configForms']
 
 /** 装饰层暴露给回归脚本的读数入口。 */
 declare global {
@@ -47,12 +49,12 @@ declare global {
  * @param ctx - 客户端 cordis 上下文。
  */
 export function apply(ctx: ClientContext): void {
-  // 自有命名空间。不复用 ui-theme 的：它的偏好白名单只认 light/dark/system，
-  // 自定义衣装 id 存不进去。远端浏览器没有特权设置 API 时 bind 会给出
-  // unavailable 快照，SuitRuntime 退化为进程内偏好——与内置行同款降级。
-  const scope = ctx.settingsScope.bind<JoiSettings>({ namespace: SETTINGS_NAMESPACE })
+  // 本插件 Loader 行的配置表单。命名空间 = 该行 id（见 cordis.patch.yml），
+  // 设置服务缺席时 get 仍返回一个不会再 ready 的表单，SuitRuntime 退化为
+  // localStorage 偏好——与内置行同款降级。
+  const form = ctx.configForms.get<JoiSettings>(SETTINGS_NAMESPACE)
 
-  const suits = new SuitRuntime(ctx.theme, scope)
+  const suits = new SuitRuntime(ctx.theme, form)
   suits.start()
   const surfaces = new Surfaces(suits.skin, () => suits.persistence)
 
@@ -71,10 +73,8 @@ export function apply(ctx: ClientContext): void {
   ctx.effect(() => () => { suits.dispose() }, 'joi-theme: token 覆盖层')
 
   // 设置文档可能在别处被改（多窗口、Host 侧写入）；回读时不再写回去。
-  ctx.effect(() => scope.subscribe(() => {
-    const stored = scope.getSnapshot().value?.suit
-    if (stored !== undefined && stored !== suits.skin) suits.setSuit(stored, false)
-  }), 'joi-theme: 设置回读')
+  // 只采纳用户层：value 带 schema 默认值，回灌会顶掉本地兜底的选择。
+  ctx.effect(() => form.subscribe(() => { suits.adoptHost() }), 'joi-theme: 设置回读')
 
   installSuitRow(ctx, suits)
 

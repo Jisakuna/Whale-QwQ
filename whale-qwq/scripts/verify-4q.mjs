@@ -21,7 +21,11 @@ import { resolve, dirname, basename } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '..')
-const B = JSON.parse(readFileSync(resolve(ROOT, 'design/baseline-4q.json'), 'utf8'))
+// design/ 不随仓库发布（.gitignore 里有它）。没有基线 JSON 时不做「从基线复算」
+// 那一段断言——不是在替代码背书，而是如实地把这一段标成未覆盖；素材与选择器
+// 体检照跑，构建也不依赖它。
+const DESIGN = resolve(ROOT, 'design/baseline-4q.json')
+const B = existsSync(DESIGN) ? JSON.parse(readFileSync(DESIGN, 'utf8')) : undefined
 
 let failures = 0
 let checks = 0
@@ -56,6 +60,10 @@ const gen = resolve(ROOT, 'src/generated/baseline.ts')
 check('生成产物存在（先跑 npm run gen）', existsSync(gen))
 if (!existsSync(gen)) process.exit(1)
 
+if (B === undefined) {
+  console.log('  · design/baseline-4q.json 不在（未随仓库发布），基线断言跳过；')
+  console.log('    生成产物已随仓库提交，构建与发布不受影响。')
+} else {
 // 直接从基线 JSON 复算覆盖层，与 src/client/tokens.ts 同规则。
 // 复算而不是 import 编译产物：这样断言的是「基线怎么说」，
 // 而不是「代码怎么做」——否则代码写错了断言会跟着一起错。
@@ -108,6 +116,7 @@ eq('成熟度终点 100%', stops.at(-1)[0], 100)
 // 覆盖层规模：色阶 19 + 语义 44 + shiki 9 + 私有变量。少了就是有东西没接上。
 const expectedTokens = B.neutralRamp.steps.length + Object.keys(tokenMap).length + 9
 console.log(`  覆盖层最少 ${expectedTokens} 条（19 色阶 + ${Object.keys(tokenMap).length} 语义 + 9 shiki）+ 私有变量`)
+}
 
 // 素材：内联体积与保真门槛由 gen-assets 把关，这里只确认产物在
 const assets = resolve(ROOT, 'src/generated/assets.ts')
@@ -181,6 +190,8 @@ if (captures.length === 0) {
   console.log('\n实况半：未提供抓取文件，跳过。')
   console.log('  抓法：四个象限各在浏览器控制台跑一次')
   console.log("  copy(document.getElementById('joi-theme-css').getAttribute('data-joi-metrics'))")
+} else if (B === undefined) {
+  console.log(`\n实况半：${captures.length} 份抓取，但 design/ 缺失，几何基线断言跳过（此前的静态半也已跳过）。`)
 } else {
   console.log(`\n实况半：${captures.length} 份抓取`)
   const g = B.geometry

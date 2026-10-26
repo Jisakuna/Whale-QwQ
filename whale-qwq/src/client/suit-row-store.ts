@@ -4,7 +4,9 @@
  * 组件只经由 props.useStore 读，写入口只有插件 apply 里的那一处同步回调。
  * 这条单向性是 slot store 的约定，也是这里不直接把 SuitRuntime 传进组件的原因。
  */
-import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-runtime/client'
+// 0.2.x 把快照 store 引擎从 dsh-client-runtime 升格成了平台模块
+// @deepseek-ai/dsh-client-store（浏览器模块表里直接有它）。
+import { defineStore, type EngineStoreHandle } from '@deepseek-ai/dsh-client-store'
 import { DEFAULT_SKIN, type Skin } from '../contract.ts'
 
 /** app 的内置明暗偏好。 */

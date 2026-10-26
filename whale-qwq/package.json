@@ -1,7 +1,7 @@
 {
   "name": "whale-qwq",
-  "version": "0.1.9",
-  "description": "轴伊 Joi 双衣装主题（Joi-Flowers / Joi-Library）for DeepSeek Harness — unofficial, non-commercial fan theme plugin",
+  "version": "0.2.0",
+  "description": "轴伊 Joi 双衣装主题（Joi-Flowers / Joi-Library）for DeepSeek Harness 0.2.x — unofficial, non-commercial fan theme plugin",
   "keywords": [
     "deepseek-harness",
     "dsh",
@@ -36,7 +36,8 @@
     "THIRD_PARTY_NOTICES.md"
   ],
   "engines": {
-    "node": ">=20"
+    "node": ">=20",
+    "dsh": "^0.2.1-rc.2"
   },
   "dsh": {
     "bundle": {
@@ -45,6 +46,7 @@
     "client": {
       "platform": "web",
       "inject": [
+        "@deepseek-ai/dsh-client-ui-renderer",
         "@deepseek-ai/dsh-client-ui-theme",
         "@deepseek-ai/dsh-client-ui-settings",
         "@deepseek-ai/dsh-client-locale"
@@ -53,29 +55,31 @@
   },
   "scripts": {
     "gen": "node scripts/gen-baseline.mjs && node scripts/gen-assets.mjs",
-    "build": "npm run gen && tsdown",
+    "build": "tsdown",
+    "build:full": "npm run gen && tsdown",
     "verify": "node scripts/verify-4q.mjs capture/*.json",
     "prepublishOnly": "npm run build && npm run verify",
     "verify:static": "node scripts/verify-4q.mjs"
   },
   "devDependencies": {
-    "@deepseek-ai/cordis": "4.0.1",
-    "@deepseek-ai/dsh-settings": "0.1.0-rc.6",
-    "@deepseek-ai/schemastery": "3.18.1",
-    "@deepseek-ai/dsh-client-locale": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-runtime": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-primitives": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-settings": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-slots": "0.1.0-rc.6",
-    "@deepseek-ai/dsh-client-ui-theme": "0.1.0-rc.6",
+    "@deepseek-ai/cordis": "4.0.5",
+    "@deepseek-ai/dsh-client-locale": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-store": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-primitives": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-settings": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-client-ui-theme": "0.2.1-rc.3",
+    "@deepseek-ai/dsh-settings": "0.2.1-rc.3",
+    "@deepseek-ai/schemastery": "3.18.5",
     "@types/node": "^24.13.3",
     "@types/react": "~18.3.1",
+    "react": "~18.3.1",
     "tsdown": "^0.22.2",
     "typescript": "^6.0.3"
   },
   "peerDependencies": {
-    "@deepseek-ai/dsh-settings": "^0.1.0-rc.6",
-    "@deepseek-ai/schemastery": "^3.18.1-rc.1",
+    "@deepseek-ai/schemastery": "^3.18.5",
     "react": "^18.2.0"
   },
   "publishConfig": {
