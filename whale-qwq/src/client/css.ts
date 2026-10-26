@@ -132,17 +132,20 @@ ${SELECTORS.brand} {
   background-image: var(--joi-brand-logo) !important;
   background-position: left center !important;
   background-repeat: no-repeat !important;
-  background-size: auto 46px !important;
-  padding-left: 98px !important;
+  /* 40px 是字标的设计高度（brand-logo.ts 存的是 2× 的 80px 图）。 */
+  background-size: auto 40px !important;
+  /* 原生 mark/name 已被下面那条规则收掉，98px 的左内边距没有东西要避让了；
+     留着只会把可点区域拉宽、把字标挤离左缘。 */
+  padding-left: 0 !important;
   min-height: 54px !important;
   overflow: visible !important;
   filter: var(--joi-logo-rim);
 }
 ${SELECTORS.brand} svg { overflow: visible !important; transform: translateX(-27px); }
 
-/* 0.2.1 的字标是「Joi logo + 原生 mark/name」两段拼的：identitiy 那层原本
-   aria-hidden，纯装饰。既然 logo 已经落在按钮上，就把原生 mark/name 整层收掉，
-   否则 46px 的 logo 旁边还挤着鲸鱼标与 deepseek 字样，窄侧栏里必然裁切。 */
+/* 0.2.1 的字标是「logo + 原生 mark/name」两段拼的：identity 那层原本
+   aria-hidden，纯装饰。既然字标图已经落在按钮上，就把原生 mark/name 整层收掉，
+   否则 40px 的 DeepSeek 字标旁边还挤着鲸鱼标与另一份 deepseek 字样。 */
 ${SELECTORS.brand} > [class*=_brandIdentity] { display: none !important; }
 
 /* ④  底纹没有可贴的表面 —— 见下面 textureRules 与 paintTexture。 */

@@ -14,7 +14,7 @@
  * design-platform.css 的 body{} 规则，而且插件 dispose 时 presenter 自己收回。
  */
 import { PALETTE, RAMP, SHIKI, TEXTURE, TOKEN_MAP, type Suit } from '../generated/baseline.ts'
-import { ASSETS } from '../generated/assets.ts'
+import { BRAND_LOGO } from './brand-logo.ts'
 
 /** 一个 token 在明暗两态下的取值。overrideTokens 要求两态都给。 */
 export interface TokenModes {
@@ -88,13 +88,15 @@ function privateVars(suit: Suit): TokenOverrides {
   const pair = (light: string | undefined, dark: string | undefined): TokenModes =>
     ({ light: light ?? 'transparent', dark: dark ?? 'transparent' })
 
-  const logo = suit === 'flowers' ? ASSETS.logoFlowers : ASSETS.logoLibrary
-
   return {
-    // 侧栏双人 logo。做成 token 而不是在装饰层里写 style，是因为 app 对
+    // 侧栏字标。做成 token 而不是在装饰层里写 style，是因为 app 对
     // .r91kyq_brand 用了 background 简写——外部设的 background-image 会被
-    // 整条抹掉。样式表里那条带 !important 的规则引用这个变量，换装即换图。
-    '--joi-brand-logo': { light: `url('${logo}')`, dark: `url('${logo}')` },
+    // 整条抹掉。样式表里那条带 !important 的规则引用这个变量。
+    //
+    // 0.2.x 起这里用 BRAND_LOGO（由 scripts/make-brand-logo.mjs 从一张
+    // DeepSeek 糖果字 logo 裁边、缩好、转 WebP 内联）：原来按衣装切换的
+    // ASSETS.logoFlowers / logoLibrary 双人图不再用于字标。明暗同图。
+    '--joi-brand-logo': { light: `url('${BRAND_LOGO}')`, dark: `url('${BRAND_LOGO}')` },
     // 气泡文字色随气泡底走：Flowers 金底配深棕字，Library 灰底配正文色。
     '--joi-bubble-ink': pair(l.bubbleInk, d.bubbleInk),
     // 发送键的字形色。浅色下橘偏深配白字；深色下橘本身偏亮，改配深字。
