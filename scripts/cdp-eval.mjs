@@ -45,6 +45,14 @@ const { targetId } = await send('Target.createTarget', { url: 'about:blank' })
 const { sessionId } = await send('Target.attachToTarget', { targetId, flatten: true })
 const S = (m, p) => send(m, p, sessionId)
 await S('Runtime.enable'); await S('Page.enable')
+if (process.env.WIDTH) {
+  await S('Emulation.setDeviceMetricsOverride', {
+    width: Number(process.env.WIDTH),
+    height: Number(process.env.HEIGHT ?? 865),
+    deviceScaleFactor: 1,
+    mobile: false,
+  })
+}
 if (process.env.DARK) {
   await S('Emulation.setEmulatedMedia', {
     features: [{ name: 'prefers-color-scheme', value: 'dark' }],

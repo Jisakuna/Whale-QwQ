@@ -193,15 +193,21 @@ cd "$env:USERPROFILE\.dsh\profiles\web"; pnpm install
    （`_brandIdentity`，本来就是 `aria-hidden` 的装饰）收掉：**图标一个就够**。
    顺带修了个隐蔽开销：`brandSurgery()` 在新结构里找不到可搬的「HARNESS 字母段」，
    原先每帧都会重算一遍 `getBBox`；现在判一次就写 `data-joi-skip`，不再逐帧重试。
-2. **左下角常驻 pet 压住底栏。** 0.2.x 的侧栏底部是「今日消费卡片 + 账号行」，
-   `bottom: 20px` 时 pet 正好压在「已登录」那一行上。按反馈上移 20px
-   （`bottom: max(40px, …)`）。
+2. **左下角常驻 pet 压住底栏。** 0.2.x 的侧栏底部是「今日消费卡片 + 账号行 + 两个图标」，
+   底栏高约 210px 而角色高 160px——侧栏里没有一块 148×160 的空地，上移多少都只是换一样
+   东西压。最终改成**站到侧栏与输入卡片之间的空档里**（输入卡片居中，1504 宽下这条空档
+   约 203px），贴底 20px：
+   - 放得下原尺寸时在空档里居中（1504 宽 → `x=305`）；
+   - 空档不足 164px 时等比缩小（`scale = (空档 − 16) / 148`），下限 0.55
+     （空档 ≈ 97px 时停止，1200 宽 → 视觉宽 86px）；
+   - 再窄、或没有侧栏（收起成 rail）、或没有输入卡片（设置页）时直接隐藏；
+   - 模态（`[role="dialog"]`，例如设置面板）打开时一起退场，免得从面板边缘露出半张脸。
 
-实测（1504×865 视口，headless Chrome）：带 logo 背景的元素从 **4 个降到 1 个**，
-`_brandIdentity` 计算样式为 `display: none`，pet 的 bottom 从 20 变 40。
-侧栏截图见 `docs/sidebar-brand-pet.png`。
+   站位每次由 `syncPosition()` 重新量（侧栏右缘 vs. `[data-composer-card]` 左缘），
+   切会话、展开/收起侧栏、改窗口大小都跟着走。
 
-> 关于 pet 的剩余遮挡：40px 只兑现了「上移 20px」。侧栏底栏高约 210px、pet 高 160px，
-> 所以它依旧压着「今日消费」卡片的下半部分。要完全让开底栏，把
-> `dsh-maid-whale-pet/src/client/index.ts` 里的 `bottom: max(40px, …)`
-> 调到 `max(220px, …)` 左右；代价是它会改压会话列表的最后两行。
+实测（1504×865 视口，headless Chrome）：
+- 带 logo 背景的元素 **4 → 1**，`_brandIdentity` 计算样式 `display: none`；
+- pet 与输入卡片的矩形在 1920 / 1504 / 1440 / 1300 / 1200 五档宽度下**均无交叠**，
+  1100 与 960 两档隐藏；设置面板打开时 `display: none`。
+侧栏与站位截图见 `docs/sidebar-brand-pet.png`。
