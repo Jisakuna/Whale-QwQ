@@ -248,8 +248,9 @@ launcher 的健康检查是 `Invoke-WebRequest` + 状态码 200–499，可 401 
 
 ## 九、电源键（dsh-power-button，2026-10-27）
 
-给 Web GUI 加了一个「完全退出」的入口：侧栏底部（设置行下面那一排动作里）一个
-`⏻ 退出` 按钮。点开有确认框，确认后 dsh web 进程退出，端口释放，下次双击桌面图标重启。
+给 Web GUI 加了一个「完全退出」的入口：**右下角一枚浮动的 `⏻` 电源键**
+（`position: fixed; right: 16px; bottom: 16px`）。点开有确认框，确认后 dsh web 进程退出，
+端口释放，下次双击桌面图标重启。
 
 ### 为什么需要宿主半边
 
@@ -258,26 +259,28 @@ launcher 的健康检查是 `Invoke-WebRequest` + 状态码 200–499，可 401 
 - **宿主**（`src/index.ts`）在 `webServer` 上注册 `POST /api/dsh-power/shutdown`：
   先回 200，400ms 后 `ctx.get('appExit')` 走有界退出（launcher 提供时先回收插件树），
   没有就 `process.exit(0)`。
-- **浏览器**（`src/client/index.tsx`）挂在 `sidebar.footer.action` 槽位（与「发现新版本」
-  同一排），确认后 `fetch` 那条路由，页面切到「已退出」。
+- **浏览器**（`src/client/index.tsx`）用 `createRoot` 把按钮挂到 `document.body`，
+  fixed 定位、不占任何槽位——切页、收起侧栏、开面板都不会把它挤走。
+  确认后 `fetch` 那条路由，页面切到「已退出」。
 
 ### 安全边界
 
 与上游 `dsh-desktop-launcher` 同款栅栏：socket 必须来自 loopback、`Host` 头必须是
 loopback、`Sec-Fetch-Site` 不能是 `cross-site`、`Origin` 必须与 Host 同源。
-局域网/公网访问者即使拿到 UI 也打不到这条路由（返回 403）。
+局域网/公网访问者即使拿到 UI 也打不到这条路由（返回 403）。**通过 Cloudflare 隧道
+从外网访问时电源键会被拒——这是故意的。**
 
-### 0.2.x 的两个坑（都已踩过）
+### 0.2.x 的两个坑（第一版挂在侧栏时踩到的，留作记录）
 
-1. 客户端插件必须 `export const inject = ['slots']`；漏了 `ctx.slots` 是 `undefined`，
-   apply 抛 TypeError，整个 Web 启动失败（表现为 "Failed to load plugins"）。
-2. 侧栏底部是 `flex-direction: column` 的容器，app 给那一排动作设了
-   `flex: 1 1 100%`（整行按钮）。电源键要 `width/flex/align-self` 三条都加
-   `!important` 才是自己的宽度；否则会被拉成整行。
+1. 客户端插件必须 `export const inject = ['slots']`（用槽位时）；漏了 `ctx.slots` 是
+   `undefined`，apply 抛 TypeError，整个 Web 启动失败（表现为 "Failed to load plugins"）。
+2. `sidebar.footer.action` 那一排是 `flex-direction: column` 的容器，app 给动作设了
+   `flex: 1 1 100%`（整行按钮）；宽度 / `flex` / `align-self` 三条不加 `!important`
+   就会被拉成整行。这一版改用浮动层后不再受它影响。
 
 ### 实测（1504×865，headless Chrome）
 
-- 按钮在展开态是 `⏻ 退出`（68×36），收起成 rail 后是 36×36 图标；两者都与
-  「有更新」「配对手机」同排；
+- 按钮 38×38，落在视口右下角 `(1450, 811)`，距右/下各 16px；浅色与深色主题下
+  都用 `--dsw-alias-*` token 取色，浮在立绘上也读得清；
 - 点击 → 确认框（截图 `docs/power-button.png`）→ 确认 → 端口 3099 立即消失，
   页面显示「已退出」，`netstat` 无残留监听。

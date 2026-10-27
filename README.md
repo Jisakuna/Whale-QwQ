@@ -23,7 +23,7 @@ and how it was verified in a real browser).
 | `whale-qwq/` | Themes | Settings → General → “Outfits”: Joi·Flowers / Joi·Library  |
 | `dsh-custom-bg/` | Custom Background | Settings → General → “Custom Background”: import a background image and adjust opacity, with settings saved separately for light and dark modes |
 | `dsh-maid-whale-pet/` | Persistent Mascot | A mascot that follows the sidebar border (tracks drag/resize, shrinks or hides when the gutter is too tight) |
-| `dsh-power-button/` | Power Button | Sidebar footer "Quit": ends the dsh web process after a confirmation (loopback-only route) |
+| `dsh-power-button/` | Power Button | Floating "⏻" in the bottom-right corner: ends the dsh web process after a confirmation (loopback-only route) |
 
 ## Installation
 
@@ -49,7 +49,7 @@ After installation, **restart the Web GUI** — the client module graph is scann
 
 - **Outfits**: Settings → General → the “Outfits” row → select Joi·Flowers / Joi·Library / DeepSeek native
 - **Background**: Settings → General → “Custom Background” → Import Image → “Enable” → adjust the opacity
-- **Quit**: sidebar footer "⏻ Quit" → confirm → the dsh web process exits; double-click the desktop icon to start it again
+- **Quit**: the floating "⏻" in the bottom-right → confirm → the dsh web process exits; double-click the desktop icon to start it again
 - **Diagnostics**: Run `window.__joi()` (theme) or `window.__cbg()` (background) in the browser console
 
 ## Building from source

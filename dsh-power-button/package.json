@@ -1,7 +1,7 @@
 {
   "name": "dsh-power-button",
-  "version": "0.1.0",
-  "description": "侧栏底部的电源键：一键结束 dsh web 进程（loopback-only）— for DeepSeek Harness 0.2.x",
+  "version": "0.2.0",
+  "description": "右下角浮动的电源键：一键结束 dsh web 进程（loopback-only）— for DeepSeek Harness 0.2.x",
   "keywords": [
     "deepseek-harness",
     "dsh",
@@ -32,10 +32,7 @@
     },
     "client": {
       "platform": "web",
-      "inject": [
-        "@deepseek-ai/dsh-client-ui-renderer",
-        "@deepseek-ai/dsh-client-ui-sidebar"
-      ]
+      "inject": []
     }
   },
   "scripts": {
@@ -43,9 +40,6 @@
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "4.0.5",
-    "@deepseek-ai/dsh-client-ui-renderer": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-client-ui-sidebar": "0.2.1-rc.3",
-    "@deepseek-ai/dsh-client-ui-slots": "0.2.1-rc.3",
     "@deepseek-ai/dsh-host-webserver": "0.2.1-rc.2",
     "@types/react": "~18.3.1",
     "@types/react-dom": "~18.3.1",

@@ -22,7 +22,7 @@
 | `whale-qwq/` | 主题 | 设置 → 通用 → 「换装」：Joi·Flowers / Joi·Library / DeepSeek 原生 |
 | `dsh-custom-bg/` | 自定义背景 | 设置 → 通用 → 「自定义背景」：导入背景图 + 不透明度，明暗模式分别记忆 |
 | `dsh-maid-whale-pet/` | 常驻吉祥物 | 贴着侧栏右边缘随动的角色（拖宽/收起侧栏时跟着走，空档不够就缩小或隐藏） |
-| `dsh-power-button/` | 电源键 | 侧栏底部「⏻ 退出」：确认后结束 dsh web 进程（只接受 loopback 请求） |
+| `dsh-power-button/` | 电源键 | 右下角浮动的「⏻」：确认后结束 dsh web 进程（只接受 loopback 请求） |
 
 ## 安装
 
@@ -48,7 +48,7 @@ powershell -ExecutionPolicy Bypass -File .\install.ps1
 
 - **换装**：设置 → 通用 → 「换装」行，选 Joi·Flowers / Joi·Library / 原生
 - **背景**：设置 → 通用 → 「自定义背景」→ 导入图片 →「启用」→ 不透明度可调
-- **退出**：侧栏底部「⏻ 退出」→ 确认 → dsh web 进程结束；下次双击桌面图标即可重启
+- **退出**：右下角「⏻」→ 确认 → dsh web 进程结束；下次双击桌面图标即可重启
 - **诊断**：浏览器控制台运行 `window.__joi()`（主题）或 `window.__cbg()`（背景）
 
 ## 从源码构建

@@ -6,62 +6,59 @@ window.__ModuleLoader__.load({
 		Object.defineProperty(exports, Symbol.toStringTag, { value: "Module" });
 		let react = require("react");
 		let react_dom = require("react-dom");
+		let react_dom_client = require("react-dom/client");
 		let react_jsx_runtime = require("react/jsx-runtime");
 		// src/client/index.tsx
 		/**
 		* 电源键 · 浏览器半边。
 		*
-		* 挂在 `sidebar.footer.action`（侧栏底部、设置行下面那一排动作按钮），
-		* 与「发现新版本」那个按钮同一排。点击弹确认框，确认后 POST 到
-		* `/api/dsh-power/shutdown`，宿主进程退出（见 src/index.ts）。
+		* 右下角一枚浮动电源键（`position: fixed`，直接挂到 body），不占用任何
+		* 布局槽位，切页、收起侧栏、开面板都不会把它挤走。点击弹确认框，确认后
+		* POST 到 `/api/dsh-power/shutdown`，宿主进程退出（见 src/index.ts）。
 		*
-		* 没有用 ctx.effect 包注册：slots.inject 已经把注册挂到调用者 fiber 上，
-		* 卸载时自动撤销。
+		* 为什么不用槽位：`sidebar.footer.action` 那一排是侧栏的布局产物，宽度被
+		* 宿主用 `flex: 1 1 100%` 拉满，而且只存在于展开态；电源键要的是「任何
+		* 时候都在同一个角落」，所以走 fixed 浮层。
 		*/
 		/** 与宿主半边一致的关机路由。 */
 		const SHUTDOWN_PATH = "/api/dsh-power/shutdown";
-		/** 需要的服务：slots 提供侧栏底部的动作位。 */
-		const inject = ["slots"];
 		/** 样式表 id，重复挂载时先删旧的。 */
 		const STYLE_ID = "dsh-power-css";
+		/** 浮层宿主的 data 标记，便于排查/清理。 */
+		const HOST_ATTR = "data-dsh-power";
 		/** 电源键的样式。全部走 app 的语义 token，跟着明暗与衣装走。 */
 		function stylesheet() {
 			return `
-.dsh-power-action {
+.dsh-power-fab {
+  position: fixed;
+  right: 16px;
+  bottom: 16px;
+  z-index: 9;
+  box-sizing: border-box;
   display: flex;
   align-items: center;
-  gap: 6px;
-  /* 侧栏底部是 flex 列，app 给这一排动作设了 flex: 1 1 100%（整行按钮）；
-     电源键只要自己的宽度，所以这三条必须 !important。 */
-  width: auto !important;
-  flex: 0 0 auto !important;
-  align-self: flex-start !important;
-  height: 36px;
-  padding: 0 10px;
-  border: 0;
-  border-radius: 999px;
-  background: transparent;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid var(--dsw-alias-border-l2, rgba(0, 0, 0, .12));
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--dsw-alias-bg-module-platform, #ffffff) 82%, transparent);
   color: var(--dsw-alias-label-secondary, #61666b);
-  font: inherit;
-  font-size: 13px;
-  line-height: 1;
-  white-space: nowrap;
   cursor: pointer;
-  transition: background-color .15s ease, color .15s ease;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, .12);
+  transition: color .15s ease, border-color .15s ease, transform .15s ease;
 }
-.dsh-power-action:hover {
-  background: var(--dsw-alias-interactive-bg-hover, rgba(127, 127, 127, .12));
+.dsh-power-fab:hover {
   color: var(--dsw-alias-state-error-primary, #c0392b);
+  border-color: color-mix(in srgb, var(--dsw-alias-state-error-primary, #c0392b) 45%, transparent);
+  transform: translateY(-1px);
 }
-.dsh-power-action:focus-visible {
+.dsh-power-fab:active { transform: none; }
+.dsh-power-fab:focus-visible {
   outline: 2px solid var(--dsw-alias-brand-primary, #4d6bfe);
   outline-offset: 2px;
-}
-.dsh-power-action[data-flat="true"] {
-  padding: 0 !important;
-  width: 36px !important;
-  align-self: center !important;
-  justify-content: center;
 }
 
 .dsh-power-veil {
@@ -152,7 +149,7 @@ window.__ModuleLoader__.load({
 `;
 		}
 		/** 电源图标（圆环 + 顶部竖线）。 */
-		function PowerIcon({ size = 16 }) {
+		function PowerIcon({ size = 18 }) {
 			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("svg", {
 				width: size,
 				height: size,
@@ -174,11 +171,10 @@ window.__ModuleLoader__.load({
 			});
 		}
 		/**
-		* 侧栏底部的电源键。
-		* @param props - 侧栏列状态（wide = 展开态，显示文字；收起态只剩图标）。
+		* 右下角的浮动电源键 + 确认框。
 		* @returns 按钮与（必要时）确认框。
 		*/
-		function PowerAction({ wide }) {
+		function PowerFab() {
 			const [view, setView] = (0, react.useState)("closed");
 			const [error, setError] = (0, react.useState)();
 			const close = (0, react.useCallback)(() => {
@@ -210,16 +206,15 @@ window.__ModuleLoader__.load({
 					setView("error");
 				}
 			}, []);
-			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("button", {
+			return /* @__PURE__ */ (0, react_jsx_runtime.jsxs)(react_jsx_runtime.Fragment, { children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("button", {
 				type: "button",
-				className: "dsh-power-action",
-				"data-flat": wide ? "false" : "true",
+				className: "dsh-power-fab",
 				"aria-label": "退出 DeepSeek Harness",
 				title: "退出 DeepSeek Harness",
 				onClick: () => {
 					setView("confirm");
 				},
-				children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PowerIcon, {}), wide ? /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "退出" }) : null]
+				children: /* @__PURE__ */ (0, react_jsx_runtime.jsx)(PowerIcon, {})
 			}), view !== "closed" ? (0, react_dom.createPortal)(/* @__PURE__ */ (0, react_jsx_runtime.jsx)("div", {
 				className: "dsh-power-veil",
 				role: "presentation",
@@ -234,7 +229,7 @@ window.__ModuleLoader__.load({
 					children: [/* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: "dsh-power-title",
 						id: "dsh-power-title",
-						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PowerIcon, { size: 18 }), "退出 DeepSeek Harness？"]
+						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PowerIcon, {}), "退出 DeepSeek Harness？"]
 					}), view === "done" ? /* @__PURE__ */ (0, react_jsx_runtime.jsxs)("div", {
 						className: "dsh-power-done",
 						children: [/* @__PURE__ */ (0, react_jsx_runtime.jsx)("strong", { children: "已退出" }), /* @__PURE__ */ (0, react_jsx_runtime.jsx)("span", { children: "dsh web 进程已结束，可以关闭这个标签页了。" })]
@@ -277,7 +272,7 @@ window.__ModuleLoader__.load({
 			}), document.body) : null] });
 		}
 		/**
-		* 浏览器插件体：装样式、注册电源键。
+		* 浏览器插件体：装样式，把浮动电源键挂到 body。
 		* @param ctx - 客户端上下文。
 		*/
 		function apply(ctx) {
@@ -286,19 +281,20 @@ window.__ModuleLoader__.load({
 				style.id = STYLE_ID;
 				style.textContent = stylesheet();
 				document.head.append(style);
+				const host = document.createElement("div");
+				host.setAttribute(HOST_ATTR, "");
+				document.body.append(host);
+				const root = (0, react_dom_client.createRoot)(host);
+				root.render(/* @__PURE__ */ (0, react_jsx_runtime.jsx)(PowerFab, {}));
 				return () => {
+					root.unmount();
+					host.remove();
 					style.remove();
 				};
-			}, "dsh-power: 样式表");
-			ctx.slots.inject("sidebar.footer.action", () => ctx.slots.register({
-				name: "sidebar.footer.action",
-				id: "dsh-power",
-				order: 200
-			}, PowerAction));
+			}, "dsh-power: 浮动电源键");
 		}
-		exports.PowerAction = PowerAction;
+		exports.PowerFab = PowerFab;
 		exports.apply = apply;
-		exports.inject = inject;
 		return module.exports;
 	}
 });
