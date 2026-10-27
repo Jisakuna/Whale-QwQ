@@ -1,4 +1,4 @@
-# dsh-web-gui-pack 一键安装脚本（DeepSeek Harness 0.2.x）
+﻿# dsh-web-gui-pack 一键安装脚本（DeepSeek Harness 0.2.x）
 #
 # 用法（PowerShell，任意目录）：
 #   powershell -ExecutionPolicy Bypass -File .\install.ps1
@@ -45,7 +45,8 @@ if ($version -notmatch '^0\.2\.') {
 $plugins = @(
     @{ Dir = 'whale-qwq'; Name = 'whale-qwq' },
     @{ Dir = 'dsh-custom-bg'; Name = 'dsh-custom-bg' },
-    @{ Dir = 'dsh-maid-whale-pet'; Name = 'dsh-maid-whale-pet' }
+    @{ Dir = 'dsh-maid-whale-pet'; Name = 'dsh-maid-whale-pet' },
+    @{ Dir = 'dsh-power-button'; Name = 'dsh-power-button' }
 )
 
 foreach ($plugin in $plugins) {

@@ -243,3 +243,41 @@ launcher 的健康检查是 `Invoke-WebRequest` + 状态码 200–499，可 401 
 
 实测：服务已在跑时，图标 **0 秒返回并打开浏览器**（原来卡 60 秒报超时）；
 冷启动路径用 3097 端口单独验证过：5 秒内抓到令牌 URL 并打开。
+
+---
+
+## 九、电源键（dsh-power-button，2026-10-27）
+
+给 Web GUI 加了一个「完全退出」的入口：侧栏底部（设置行下面那一排动作里）一个
+`⏻ 退出` 按钮。点开有确认框，确认后 dsh web 进程退出，端口释放，下次双击桌面图标重启。
+
+### 为什么需要宿主半边
+
+浏览器碰不到宿主进程。所以插件分两半：
+
+- **宿主**（`src/index.ts`）在 `webServer` 上注册 `POST /api/dsh-power/shutdown`：
+  先回 200，400ms 后 `ctx.get('appExit')` 走有界退出（launcher 提供时先回收插件树），
+  没有就 `process.exit(0)`。
+- **浏览器**（`src/client/index.tsx`）挂在 `sidebar.footer.action` 槽位（与「发现新版本」
+  同一排），确认后 `fetch` 那条路由，页面切到「已退出」。
+
+### 安全边界
+
+与上游 `dsh-desktop-launcher` 同款栅栏：socket 必须来自 loopback、`Host` 头必须是
+loopback、`Sec-Fetch-Site` 不能是 `cross-site`、`Origin` 必须与 Host 同源。
+局域网/公网访问者即使拿到 UI 也打不到这条路由（返回 403）。
+
+### 0.2.x 的两个坑（都已踩过）
+
+1. 客户端插件必须 `export const inject = ['slots']`；漏了 `ctx.slots` 是 `undefined`，
+   apply 抛 TypeError，整个 Web 启动失败（表现为 "Failed to load plugins"）。
+2. 侧栏底部是 `flex-direction: column` 的容器，app 给那一排动作设了
+   `flex: 1 1 100%`（整行按钮）。电源键要 `width/flex/align-self` 三条都加
+   `!important` 才是自己的宽度；否则会被拉成整行。
+
+### 实测（1504×865，headless Chrome）
+
+- 按钮在展开态是 `⏻ 退出`（68×36），收起成 rail 后是 36×36 图标；两者都与
+  「有更新」「配对手机」同排；
+- 点击 → 确认框（截图 `docs/power-button.png`）→ 确认 → 端口 3099 立即消失，
+  页面显示「已退出」，`netstat` 无残留监听。

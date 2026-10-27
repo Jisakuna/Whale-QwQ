@@ -1,0 +1,4 @@
+# 纯 UI + 一条 loopback 路由：电源键（侧栏底部动作位，宿主侧注册 /api/dsh-power/shutdown）。
+- insert:
+    - id: dsh-power
+      name: dsh-power-button
