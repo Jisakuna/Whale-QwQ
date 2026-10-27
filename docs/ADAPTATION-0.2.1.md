@@ -220,3 +220,26 @@ cd "$env:USERPROFILE\.dsh\profiles\web"; pnpm install
 - 1920 / 1504 / 1440 / 1300 / 1200 五档与输入卡片均无交叠（1200 缩到 89px），
   1100 隐藏；设置面板打开时 `display: none`。
 截图见 `docs/sidebar-brand-pet.png`。
+
+---
+
+## 八、桌面快捷方式（2026-10-26 修复）
+
+`桌面\DeepSeek-Harness.lnk` → `powershell -File %USERPROFILE%\.dsh\desktop-launcher\launcher.ps1`。
+
+0.2.1 起，未持有配对 cookie 的浏览器访问 `/` 会得到 **401**
+（`dsh web authentication required; reopen the URL printed by dsh web.`）。
+launcher 的健康检查是 `Invoke-WebRequest` + 状态码 200–499，可 401 会让
+`Invoke-WebRequest` **抛异常**，于是被判定为「没起来」：它又去起第二个 `dsh web`，
+新实例绑不上 3080 直接退出，然后等满 60 秒弹「启动超时」。表现就是桌面图标点了没反应。
+
+修法（旧文件备份为 `launcher.ps1.bak`）：
+
+1. `Test-DshUrl`：捕获到 `$_.Exception.Response`（任何 HTTP 状态，含 401）即视为「服务在跑」；
+2. 冷启动时把子进程 stdout/stderr 重定向到 `%TEMP%\dsh-launch.log`，从
+   `dsh web: http://127.0.0.1:3080/?token=…` 里取出本次启动令牌，直接用它打开浏览器
+   ——令牌只存在进程内存，磁盘上没有第二份，只能从启动输出里抓；
+3. 子进程提前退出时立刻弹「启动失败」并附最后三行日志，不再干等 60 秒。
+
+实测：服务已在跑时，图标 **0 秒返回并打开浏览器**（原来卡 60 秒报超时）；
+冷启动路径用 3097 端口单独验证过：5 秒内抓到令牌 URL 并打开。
