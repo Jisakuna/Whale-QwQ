@@ -193,12 +193,14 @@ cd "$env:USERPROFILE\.dsh\profiles\web"; pnpm install
    （`_brandIdentity`，本来就是 `aria-hidden` 的装饰）收掉：**图标一个就够**。
    顺带修了个隐蔽开销：`brandSurgery()` 在新结构里找不到可搬的「HARNESS 字母段」，
    原先每帧都会重算一遍 `getBBox`；现在判一次就写 `data-joi-skip`，不再逐帧重试。
-   > **字标图已换成 DeepSeek 糖果字（2026-10-26）。** `scripts/make-brand-logo.mjs`
-   > 把 `logo.png` 裁到内容包围盒（1178×326）、按 2× 缩成 289×80、转 WebP
-   > （12.8 KB）内联进 `src/client/brand-logo.ts`，`--joi-brand-logo` 直接引用它；
-   > 源图保存在 `stuff/Stuff for Use/DeepSeek Logo - Candy.png`，要换图重跑一次脚本。
-   > 品牌行按 40px 字标高度排版（`background-size: auto 40px`），原来给双人图留的
-   > 98px 左内边距同步去掉——原生 mark/name 已经收掉，没有人需要那块空位。
+   > **字标改成「双人 + 糖果字」两层（2026-10-26）。** 左层仍是按衣装切换的双人
+   > logo（`ASSETS.logoFlowers` / `logoLibrary`，1774×887 即 2:1，46px 高 → 92px 宽）；
+   > 右层是 DeepSeek 糖果字：`scripts/make-brand-logo.mjs` 把 `logo.png` 裁到内容
+   > 包围盒（1178×326）、按 2× 缩成 289×80、转 WebP（12.8 KB）内联进
+   > `src/client/brand-logo.ts`，由 `--joi-brand-wordmark` 引用，从 100px 起
+   > （92 + 8px 间距）、30px 高 ≈ 108px 宽。两层合计约 208px，占满 216px 品牌行。
+   > 原生 mark/name 那层（`_brandIdentity`）仍然收掉，98px 左内边距同步去掉；
+   > 源图存在 `stuff/Stuff for Use/DeepSeek Logo - Candy.png`，换图重跑一次脚本即可。
 
 2. **左下角常驻 pet：改成贴着侧栏右边缘随动。** 0.2.x 的侧栏底部是「今日消费卡片 +
    账号行 + 两个图标」，底栏高约 210px 而角色高 160px——侧栏里没有一块 148×160 的空地，

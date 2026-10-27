@@ -129,13 +129,16 @@ ${SELECTORS.sidebarCol} { overflow: visible !important; }
 /* ③  app 对品牌区用了 background 简写，会把外部设的 background-image 整条
       抹掉——只剩 padding 生效，位置留出来了却没有图。整族都要 !important。 */
 ${SELECTORS.brand} {
-  background-image: var(--joi-brand-logo) !important;
-  background-position: left center !important;
-  background-repeat: no-repeat !important;
-  /* 40px 是字标的设计高度（brand-logo.ts 存的是 2× 的 80px 图）。 */
-  background-size: auto 40px !important;
+  /* 两层，左双人、右字标：
+     · 双人 logo 1774×887（2:1），46px 高 → 92px 宽，贴左；
+     · DeepSeek 字标从 100px 起（92 + 8px 间距），30px 高 → 约 108px 宽。
+     合计约 208px，放得进 216px 的品牌行。 */
+  background-image: var(--joi-brand-wordmark), var(--joi-brand-logo) !important;
+  background-position: 100px center, left center !important;
+  background-repeat: no-repeat, no-repeat !important;
+  background-size: auto 30px, auto 46px !important;
   /* 原生 mark/name 已被下面那条规则收掉，98px 的左内边距没有东西要避让了；
-     留着只会把可点区域拉宽、把字标挤离左缘。 */
+     留着只会把可点区域拉宽、把双人图挤离左缘。 */
   padding-left: 0 !important;
   min-height: 54px !important;
   overflow: visible !important;
@@ -143,9 +146,9 @@ ${SELECTORS.brand} {
 }
 ${SELECTORS.brand} svg { overflow: visible !important; transform: translateX(-27px); }
 
-/* 0.2.1 的字标是「logo + 原生 mark/name」两段拼的：identity 那层原本
-   aria-hidden，纯装饰。既然字标图已经落在按钮上，就把原生 mark/name 整层收掉，
-   否则 40px 的 DeepSeek 字标旁边还挤着鲸鱼标与另一份 deepseek 字样。 */
+/* 0.2.1 的字标是「图 + 原生 mark/name」两段拼的：identity 那层原本
+   aria-hidden，纯装饰。既然双人图与字标都已经用背景层落在按钮上，就把原生
+   mark/name 整层收掉，否则旁边还挤着鲸鱼标与另一份 deepseek 字样。 */
 ${SELECTORS.brand} > [class*=_brandIdentity] { display: none !important; }
 
 /* ④  底纹没有可贴的表面 —— 见下面 textureRules 与 paintTexture。 */
