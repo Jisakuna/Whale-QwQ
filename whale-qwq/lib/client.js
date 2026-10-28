@@ -1474,8 +1474,8 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 		/**
 		* 对话页的两个 Q 版角色，以及压在它们上面的文字如何保持可读。
 		*
-		* 落座定稿（Owner 三轮现场纠偏）：正立、无倾斜、坐在输入框上方，
-		* 底缘与框顶平齐，左轴芯右轴伊。
+		* 落座定稿（2026-10-28 改版）：正立、无倾斜，站在输入框两侧的空档里，
+		* 脚底与框底平齐，左轴芯右轴伊——不再压住最后几条消息。
 		*
 		* 「底缘平齐」不能按元素底对齐 —— 元素对齐 ≠ 视觉对齐。三张精灵表的内容
 		* 底缘在格子里的位置不同（轴伊压到 0.995，轴芯 traced 版是 0.957），
@@ -1500,9 +1500,9 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 			joi: .995,
 			zhouxin: .957
 		};
-		/** 角色渲染尺寸与左右内缩。 */
+		/** 角色渲染尺寸，以及角色与输入框边缘之间的空隙。 */
 		const SIZE = 112;
-		const INSET = 28;
+		const GAP = 12;
 		/**
 		* 取对话页的 composer（没有 composerHero 修饰类的那个）。
 		* @returns 对话版 composerStack 或 null。
@@ -1524,6 +1524,13 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 		}
 		/**
 		* 摆放两个 Q 版角色。不在对话页就整组隐藏。
+		*
+		* 2026-10-28 改：原先两个角色坐在输入框顶边上（左右各一），那一排正好压着
+		* 最后几条消息，看起来像"挡对话"。现在改成站在输入框两侧的空档里——
+		* 左轴芯、右轴伊，脚底与输入框底边齐平，x 落在消息列之外，不再压任何正文。
+		*
+		* 空档不够（窄窗口、输入框变宽）时整组隐藏：这两侧位置是装饰，挤进正文里
+		* 比不出现更糟。
 		* @param nodes - 角色节点。
 		* @param suit - 当前衣装。
 		* @param state - 两个角色的表情。
@@ -1531,15 +1538,22 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 		*/
 		function placeChat(nodes, suit, state) {
 			const r = visibleCard()?.getBoundingClientRect();
-			if (r === void 0 || r.width === 0) {
+			const stack = chatComposer()?.getBoundingClientRect();
+			if (r === void 0 || r.width === 0 || stack === void 0) {
 				nodes.joi.style.display = "none";
 				nodes.zhouxin.style.display = "none";
 				return;
 			}
-			const seat = r.top;
+			if (!(r.left - stack.left >= 124 && stack.right - r.right >= 124)) {
+				nodes.joi.style.display = "none";
+				nodes.zhouxin.style.display = "none";
+				return;
+			}
+			const thread = document.querySelector(SELECTORS.thread)?.getBoundingClientRect();
+			const seat = thread !== void 0 && thread.height > 0 ? Math.round(thread.top + thread.height * .62) : r.top;
 			const joiSheet = suit === "flowers" ? ASSETS.joiFlowers : ASSETS.joiLibrary;
-			seatOne(nodes.joi, joiSheet, CELL[state.joi], r.right - INSET - SIZE, seat - SIZE * FOOT.joi);
-			seatOne(nodes.zhouxin, ASSETS.zhouxin, CELL[state.zhouxin], r.left + INSET, seat - SIZE * FOOT.zhouxin);
+			seatOne(nodes.joi, joiSheet, CELL[state.joi], r.right + GAP, seat - SIZE * FOOT.joi);
+			seatOne(nodes.zhouxin, ASSETS.zhouxin, CELL[state.zhouxin], r.left - GAP - SIZE, seat - SIZE * FOOT.zhouxin);
 			return {
 				seat: Math.round(seat),
 				joiFootDelta: Math.round(nodes.joi.getBoundingClientRect().top + SIZE * FOOT.joi - seat),
