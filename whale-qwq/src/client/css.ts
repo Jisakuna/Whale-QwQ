@@ -326,10 +326,37 @@ function overlayRules(): string {
   pointer-events: none;
   z-index: 0 !important;
 }
-#${ID}-whale, #${ID}-joi, #${ID}-zhouxin {
+#${ID}-whale {
   position: absolute;
   pointer-events: none;
   z-index: 0 !important;
+}
+
+/* 两个 Q 版角色站在输入框左右两侧。它们是「角色」，要压住立绘与常驻 pet
+   这些装饰（0 / 8），但仍留在弹层之下（设置 900+、菜单 1100），
+   免得盖住真正要点的东西。 */
+#${ID}-joi, #${ID}-zhouxin {
+  position: absolute;
+  pointer-events: none;
+  z-index: 30 !important;
+  transform-origin: 50% 100%;
+}
+
+/* 换表情时的弹跳：起跳、落地压扁、余振两次。placeChat 只在精灵格变化时
+   挂这个类（见 chat.ts 的 bounce()）。 */
+@keyframes joi-bounce {
+  0%   { transform: translateY(0) scale(1); }
+  22%  { transform: translateY(-12px) scale(1.07, .93); }
+  44%  { transform: translateY(0) scale(.96, 1.05); }
+  66%  { transform: translateY(-5px) scale(1.02, .99); }
+  84%  { transform: translateY(0) scale(.99, 1.01); }
+  100% { transform: translateY(0) scale(1); }
+}
+#${ID}-joi.joi-bounce, #${ID}-zhouxin.joi-bounce {
+  animation: joi-bounce .52s cubic-bezier(.3, 1.2, .5, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  #${ID}-joi.joi-bounce, #${ID}-zhouxin.joi-bounce { animation: none; }
 }
 #${ID}-portrait { filter: var(--joi-rim); }
 #${ID}-whale { filter: var(--joi-contact-shadow); }

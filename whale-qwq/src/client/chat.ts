@@ -118,13 +118,10 @@ export function placeChat(nodes: ChatNodes, suit: Suit, state: ChatState): ChatM
     return undefined
   }
 
-  // 落座线取会话滚动区的中段：角色站在消息列两侧的空档里，脚底落在
-  // 视口中线略偏下的位置。不再贴着输入框顶边——那条线正好压着最后几条消息，
-  // 也正好是常驻 pet（.dsh-mwp-mascot）站的地方。
-  const thread = document.querySelector(SELECTORS.thread)?.getBoundingClientRect()
-  const seat = thread !== undefined && thread.height > 0
-    ? Math.round(thread.top + thread.height * 0.62)
-    : r.top
+  // 落座线 = 输入框底边：两个角色就站在输入框左右两侧，脚底与框底齐平。
+  // 它们在 css.ts 里被抬到 z-index 30（高于内容、低于弹层），所以即使和
+  // 立绘/常驻 pet 同处一块地方，也是角色在上、不被压住。
+  const seat = r.bottom
   const joiSheet = suit === 'flowers' ? ASSETS.joiFlowers : ASSETS.joiLibrary
 
   seatOne(nodes.joi, joiSheet, CELL[state.joi], r.right + GAP, seat - SIZE * FOOT.joi)
@@ -147,6 +144,22 @@ export interface ChatMetrics {
   zhouxinFootDelta: number
 }
 
+/** 每个角色上一次渲染的精灵格；用来判断「要不要弹」。 */
+const lastCell = new WeakMap<HTMLElement, string>()
+
+/**
+ * 让角色弹一下（换表情时的反馈）。
+ *
+ * 先摘类、强制一次重排、再挂上——否则连续两次切换（比如 running → done 很快）
+ * 第二次会因为没有重新触发动画而毫无反应。
+ * @param el - 角色节点。
+ */
+function bounce(el: HTMLElement): void {
+  el.classList.remove('joi-bounce')
+  void el.offsetWidth
+  el.classList.add('joi-bounce')
+}
+
 /**
  * 把一个角色放到指定位置并切到指定精灵格。
  * @param el - 角色节点。
@@ -156,6 +169,13 @@ export interface ChatMetrics {
  * @param top - 视口 y（同上）。
  */
 function seatOne(el: HTMLElement, sheet: string, cell: [number, number], left: number, top: number): void {
+  // 表情格变了就弹一下。placeChat 是逐帧调的，所以只在「格子变了」时触发，
+  // 不能每帧都重启动画。
+  const key = `${String(cell[0])}:${String(cell[1])}`
+  const previous = lastCell.get(el)
+  lastCell.set(el, key)
+  if (previous !== undefined && previous !== key) bounce(el)
+
   el.style.display = 'block'
   el.style.width = `${SIZE}px`
   el.style.height = `${SIZE}px`

@@ -1077,10 +1077,37 @@ ${SELECTORS.composerSend}:not(:disabled):hover {
   pointer-events: none;
   z-index: 0 !important;
 }
-#${ID}-whale, #${ID}-joi, #${ID}-zhouxin {
+#${ID}-whale {
   position: absolute;
   pointer-events: none;
   z-index: 0 !important;
+}
+
+/* 两个 Q 版角色站在输入框左右两侧。它们是「角色」，要压住立绘与常驻 pet
+   这些装饰（0 / 8），但仍留在弹层之下（设置 900+、菜单 1100），
+   免得盖住真正要点的东西。 */
+#${ID}-joi, #${ID}-zhouxin {
+  position: absolute;
+  pointer-events: none;
+  z-index: 30 !important;
+  transform-origin: 50% 100%;
+}
+
+/* 换表情时的弹跳：起跳、落地压扁、余振两次。placeChat 只在精灵格变化时
+   挂这个类（见 chat.ts 的 bounce()）。 */
+@keyframes joi-bounce {
+  0%   { transform: translateY(0) scale(1); }
+  22%  { transform: translateY(-12px) scale(1.07, .93); }
+  44%  { transform: translateY(0) scale(.96, 1.05); }
+  66%  { transform: translateY(-5px) scale(1.02, .99); }
+  84%  { transform: translateY(0) scale(.99, 1.01); }
+  100% { transform: translateY(0) scale(1); }
+}
+#${ID}-joi.joi-bounce, #${ID}-zhouxin.joi-bounce {
+  animation: joi-bounce .52s cubic-bezier(.3, 1.2, .5, 1) both;
+}
+@media (prefers-reduced-motion: reduce) {
+  #${ID}-joi.joi-bounce, #${ID}-zhouxin.joi-bounce { animation: none; }
 }
 #${ID}-portrait { filter: var(--joi-rim); }
 #${ID}-whale { filter: var(--joi-contact-shadow); }
@@ -1549,8 +1576,7 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 				nodes.zhouxin.style.display = "none";
 				return;
 			}
-			const thread = document.querySelector(SELECTORS.thread)?.getBoundingClientRect();
-			const seat = thread !== void 0 && thread.height > 0 ? Math.round(thread.top + thread.height * .62) : r.top;
+			const seat = r.bottom;
 			const joiSheet = suit === "flowers" ? ASSETS.joiFlowers : ASSETS.joiLibrary;
 			seatOne(nodes.joi, joiSheet, CELL[state.joi], r.right + GAP, seat - SIZE * FOOT.joi);
 			seatOne(nodes.zhouxin, ASSETS.zhouxin, CELL[state.zhouxin], r.left - GAP - SIZE, seat - SIZE * FOOT.zhouxin);
@@ -1559,6 +1585,20 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 				joiFootDelta: Math.round(nodes.joi.getBoundingClientRect().top + SIZE * FOOT.joi - seat),
 				zhouxinFootDelta: Math.round(nodes.zhouxin.getBoundingClientRect().top + SIZE * FOOT.zhouxin - seat)
 			};
+		}
+		/** 每个角色上一次渲染的精灵格；用来判断「要不要弹」。 */
+		const lastCell = /* @__PURE__ */ new WeakMap();
+		/**
+		* 让角色弹一下（换表情时的反馈）。
+		*
+		* 先摘类、强制一次重排、再挂上——否则连续两次切换（比如 running → done 很快）
+		* 第二次会因为没有重新触发动画而毫无反应。
+		* @param el - 角色节点。
+		*/
+		function bounce(el) {
+			el.classList.remove("joi-bounce");
+			el.offsetWidth;
+			el.classList.add("joi-bounce");
 		}
 		/**
 		* 把一个角色放到指定位置并切到指定精灵格。
@@ -1569,6 +1609,10 @@ ${SELECTORS.thread} { position: relative; z-index: 1; }
 		* @param top - 视口 y（同上）。
 		*/
 		function seatOne(el, sheet, cell, left, top) {
+			const key = `${String(cell[0])}:${String(cell[1])}`;
+			const previous = lastCell.get(el);
+			lastCell.set(el, key);
+			if (previous !== void 0 && previous !== key) bounce(el);
 			el.style.display = "block";
 			el.style.width = `${SIZE}px`;
 			el.style.height = `${SIZE}px`;
