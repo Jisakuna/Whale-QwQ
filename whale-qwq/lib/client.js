@@ -1095,16 +1095,26 @@ ${SELECTORS.composerSend}:not(:disabled):hover {
 
 /* 换表情时的弹跳：起跳、落地压扁、余振两次。placeChat 只在精灵格变化时
    挂这个类（见 chat.ts 的 bounce()）。 */
+/* 换表情时的弹跳：一次完整动画 1.5s，五连跳、幅度由大到小
+   （28 → 17 → 9 → 4 → 1.5px），每次落地压扁、每次起跳拉长，
+   像一颗小球落地后的余振。placeChat 只在精灵格变化时挂这个类
+   （见 chat.ts 的 bounce()）。 */
 @keyframes joi-bounce {
   0%   { transform: translateY(0) scale(1); }
-  22%  { transform: translateY(-12px) scale(1.07, .93); }
-  44%  { transform: translateY(0) scale(.96, 1.05); }
-  66%  { transform: translateY(-5px) scale(1.02, .99); }
-  84%  { transform: translateY(0) scale(.99, 1.01); }
+  10%  { transform: translateY(-28px) scale(1.09, .91); }
+  20%  { transform: translateY(0) scale(.88, 1.12); }
+  30%  { transform: translateY(-17px) scale(1.06, .94); }
+  40%  { transform: translateY(0) scale(.92, 1.08); }
+  50%  { transform: translateY(-9px) scale(1.04, .96); }
+  60%  { transform: translateY(0) scale(.95, 1.05); }
+  70%  { transform: translateY(-4px) scale(1.02, .98); }
+  80%  { transform: translateY(0) scale(.98, 1.02); }
+  90%  { transform: translateY(-1.5px) scale(1.01, .99); }
   100% { transform: translateY(0) scale(1); }
 }
 #${ID}-joi.joi-bounce, #${ID}-zhouxin.joi-bounce {
-  animation: joi-bounce .52s cubic-bezier(.3, 1.2, .5, 1) both;
+  animation: joi-bounce 1.5s ease-in-out both;
+}  animation: joi-bounce .9s cubic-bezier(.3, 1.2, .5, 1) both;
 }
 @media (prefers-reduced-motion: reduce) {
   #${ID}-joi.joi-bounce, #${ID}-zhouxin.joi-bounce { animation: none; }
